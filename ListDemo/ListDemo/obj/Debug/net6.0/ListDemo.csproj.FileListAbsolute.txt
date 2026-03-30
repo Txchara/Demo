@@ -1,0 +1,15 @@
+D:\Temp\MyDemo\ListDemo\ListDemo\bin\Debug\net6.0\ListDemo.exe
+D:\Temp\MyDemo\ListDemo\ListDemo\bin\Debug\net6.0\ListDemo.deps.json
+D:\Temp\MyDemo\ListDemo\ListDemo\bin\Debug\net6.0\ListDemo.runtimeconfig.json
+D:\Temp\MyDemo\ListDemo\ListDemo\bin\Debug\net6.0\ListDemo.dll
+D:\Temp\MyDemo\ListDemo\ListDemo\bin\Debug\net6.0\ListDemo.pdb
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.csproj.AssemblyReference.cache
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.GeneratedMSBuildEditorConfig.editorconfig
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.AssemblyInfoInputs.cache
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.AssemblyInfo.cs
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.csproj.CoreCompileInputs.cache
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.dll
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\refint\ListDemo.dll
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.pdb
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ListDemo.genruntimeconfig.cache
+D:\Temp\MyDemo\ListDemo\ListDemo\obj\Debug\net6.0\ref\ListDemo.dll

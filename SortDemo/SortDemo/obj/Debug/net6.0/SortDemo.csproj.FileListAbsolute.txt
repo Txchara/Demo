@@ -1,0 +1,15 @@
+D:\Temp\MyDemo\SortDemo\SortDemo\bin\Debug\net6.0\SortDemo.exe
+D:\Temp\MyDemo\SortDemo\SortDemo\bin\Debug\net6.0\SortDemo.deps.json
+D:\Temp\MyDemo\SortDemo\SortDemo\bin\Debug\net6.0\SortDemo.runtimeconfig.json
+D:\Temp\MyDemo\SortDemo\SortDemo\bin\Debug\net6.0\SortDemo.dll
+D:\Temp\MyDemo\SortDemo\SortDemo\bin\Debug\net6.0\SortDemo.pdb
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.csproj.AssemblyReference.cache
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.GeneratedMSBuildEditorConfig.editorconfig
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.AssemblyInfoInputs.cache
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.AssemblyInfo.cs
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.csproj.CoreCompileInputs.cache
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.dll
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\refint\SortDemo.dll
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.pdb
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\SortDemo.genruntimeconfig.cache
+D:\Temp\MyDemo\SortDemo\SortDemo\obj\Debug\net6.0\ref\SortDemo.dll
