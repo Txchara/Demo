@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Data.SqlClient;
+using SqlDemo.Models;
 
 namespace SqlDemo
 {
@@ -27,10 +28,20 @@ namespace SqlDemo
                 Console.WriteLine("数据库连接成功");
 
                 // 输出当前连接到的服务器、数据库名称和服务器时间。
-                DatabaseSchemaPrinter.PrintDatabaseInfo(conn);
+                //DatabaseSchemaPrinter.PrintDatabaseInfo(conn);
 
                 // 输出当前数据库中的表以及每张表对应的字段信息。
-                DatabaseSchemaPrinter.PrintTablesAndColumns(conn);
+                //DatabaseSchemaPrinter.PrintTablesAndColumns(conn);
+
+                var user = new UserInfos
+                {
+                    //UserId = 1002,
+                    UserName = "lisi",
+                    UserAddr = "Shanghai",
+                    UserRoleId = 1
+                };
+
+                var rows = ReflectionInsertHelper.Insert(conn, user);
             }
             catch (Exception)
             {
@@ -44,5 +55,7 @@ namespace SqlDemo
                 conn?.Close();
             }
         }
+
+        
     }
 }
