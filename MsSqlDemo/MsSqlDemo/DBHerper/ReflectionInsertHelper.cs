@@ -9,12 +9,12 @@ namespace SqlDemo
     public static class ReflectionInsertHelper
     {
         /// <summary>
-        /// 插入一条数据【true】/【false】
+        /// 插入一条数据
         /// </summary>
         /// <typeparam name="T">任意类型</typeparam>
         /// <param name="conn">数据库连接对象</param>
         /// <param name="Enttiy">要插入的数据对象（实体）</param>
-        /// <returns></returns>
+        /// <returns>【true】/【false】</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public static bool Insert<T>(SqlConnection conn, T Enttiy) where T : class
         {
@@ -69,6 +69,44 @@ namespace SqlDemo
             {
                 return false;                
             }
+        }
+
+        /// <summary>
+        ///  查询所有数据
+        /// </summary>
+        /// <typeparam name="T">任意类型</typeparam>
+        /// <param name="conn">数据库连接对象</param>
+        /// <param name="TableName">需要查询的表名</param>
+        /// <returns>数据存在就以字典形式返回，如果数据不存在则返回空</returns>
+        public static List<Dictionary<string,object>> Get<T>(SqlConnection conn, string TableName)
+        {
+            //确保连接已打开
+            if (conn == null)
+                return new List<Dictionary<string, object>>();
+            //常规非空校验
+            if (string.IsNullOrWhiteSpace(TableName))
+                return new List<Dictionary<string, object>>();
+
+            var result = new List<Dictionary<string, object?>>();
+            var Sql = $"Select * From [dbo].[{TableName}]";
+
+            using var command = new SqlCommand(Sql, conn);
+            using var Reader = command.ExecuteReader();
+
+            while (Reader.Read())
+            {
+                var row = new Dictionary<string, object>();
+
+                for (int i = 0; i < Reader.FieldCount; i++)
+                {
+                    var ColumnName = Reader.GetName(i);
+                    var Value = Reader.IsDBNull(i) ? null : Reader.GetValue(i);
+                    row[ColumnName] = Value;
+                }
+                result.Add(row);
+            }
+
+            return result;
         }
     }
 }

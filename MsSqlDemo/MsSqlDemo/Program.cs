@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Data.SqlClient;
+using SqlDemo.Infrastructure;
 using SqlDemo.Models;
 
 namespace SqlDemo
@@ -35,18 +36,18 @@ namespace SqlDemo
 
                 var user = new UserInfos
                 {
-                    //UserId = 1002,
+                    UserId = SnowflakeIdGenerator.NewId(),
                     UserName = "lisi",
                     UserAddr = "Shanghai",
                     UserRoleId = 1
                 };
 
                 var rows = ReflectionInsertHelper.Insert(conn, user);
+
+                var GetUserInfo = ReflectionInsertHelper.Get<UserInfos>(conn, "UserInfos");
             }
             catch (Exception)
             {
-                // 捕获所有异常（包括 SqlException）。
-                // 当前示例不做额外处理，直接将异常抛给上层。
                 throw;
             }
             finally
@@ -54,8 +55,6 @@ namespace SqlDemo
                 // 无论执行成功还是失败，都在 Main 中主动关闭数据库连接。
                 conn?.Close();
             }
-        }
-
-        
+        }        
     }
 }

@@ -5,11 +5,11 @@ namespace SqlDemo.Models
     /// </summary>
     public class RoleInfos
     {
-        public int RoleId { get; set; }
+        public long RoleId { get; set; }
 
         public string? RoleName { get; set; }
 
-        public int? UserRoleId { get; set; }
+        public long? UserRoleId { get; set; }
     }
 
     /// <summary>
@@ -17,13 +17,13 @@ namespace SqlDemo.Models
     /// </summary>
     public class UserInfos
     {
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         public string? UserName { get; set; }
 
         public string? UserAddr { get; set; }
 
-        public int? UserRoleId { get; set; }
+        public long? UserRoleId { get; set; }
     }
 
     /// <summary>
@@ -31,10 +31,10 @@ namespace SqlDemo.Models
     /// </summary>
     public class UserRoleInfos
     {
-        public int UserRoleId { get; set; }
+        public long UserRoleId { get; set; }
 
-        public int? UserId { get; set; }
+        public long? UserId { get; set; }
 
-        public int? RoleId { get; set; }
+        public long? RoleId { get; set; }
     }
 }
