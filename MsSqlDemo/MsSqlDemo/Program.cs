@@ -33,18 +33,38 @@ namespace SqlDemo
 
                 // 输出当前数据库中的表以及每张表对应的字段信息。
                 //DatabaseSchemaPrinter.PrintTablesAndColumns(conn);
+                
+                #region 插入数据
+                //var user = new UserInfos
+                //{
+                //    UserId = SnowflakeIdGenerator.NewId(),
+                //    UserName = "zhaoliu",
+                //    UserAddr = "Shanghai",
+                //    UserRoleId = 1
+                //};
 
-                var user = new UserInfos
-                {
-                    UserId = SnowflakeIdGenerator.NewId(),
-                    UserName = "lisi",
-                    UserAddr = "Shanghai",
-                    UserRoleId = 1
-                };
+                //var rows = Db.Insert(conn, user);
+                #endregion
+                #region 查询所有数据
+                //var GetUserInfo = Db.Get<UserInfos>(conn);
 
-                var rows = ReflectionInsertHelper.Insert(conn, user);
-
-                var GetUserInfo = ReflectionInsertHelper.Get<UserInfos>(conn, "UserInfos");
+                //foreach (var item in GetUserInfo)
+                //{
+                //    Console.WriteLine($"所有数据：");
+                //    foreach (var Values in item.Values)
+                //    {
+                //        Console.WriteLine($"{Values}");
+                //    }
+                //}
+                #endregion
+                #region 根据Id查询
+                //var GetUserId = Db.GetById<UserInfos>(conn, 300174492209123328);
+                //Console.WriteLine($"300199603947573248 所有数据：");
+                //foreach (var item in GetUserId)
+                //{
+                //    Console.WriteLine($"{item.Value}");
+                //}
+                #endregion
             }
             catch (Exception)
             {
