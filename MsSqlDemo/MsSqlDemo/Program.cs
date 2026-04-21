@@ -33,7 +33,7 @@ namespace SqlDemo
 
                 // 输出当前数据库中的表以及每张表对应的字段信息。
                 //DatabaseSchemaPrinter.PrintTablesAndColumns(conn);
-                
+
                 #region 插入数据
                 //var user = new UserInfos
                 //{
@@ -48,9 +48,9 @@ namespace SqlDemo
                 #region 查询所有数据
                 //var GetUserInfo = Db.Get<UserInfos>(conn);
 
+                //Console.WriteLine($"所有数据：");
                 //foreach (var item in GetUserInfo)
                 //{
-                //    Console.WriteLine($"所有数据：");
                 //    foreach (var Values in item.Values)
                 //    {
                 //        Console.WriteLine($"{Values}");
@@ -59,11 +59,43 @@ namespace SqlDemo
                 #endregion
                 #region 根据Id查询
                 //var GetUserId = Db.GetById<UserInfos>(conn, 300174492209123328);
-                //Console.WriteLine($"300199603947573248 所有数据：");
+                //Console.WriteLine($"300174492209123328 所有数据：");
                 //foreach (var item in GetUserId)
                 //{
-                //    Console.WriteLine($"{item.Value}");
+                //    Console.WriteLine($"{item}");
                 //}
+                #endregion
+                #region 根据UserName查询第一条
+                //var GetFirst = Db.GetFirstByField<UserInfos>(conn, "UserName", "zhangsan");
+
+                //foreach (var item in GetFirst.Values)
+                //{
+                //    Console.WriteLine(item);
+                //}
+                #endregion
+                #region 根据UserName查询所有数据
+                //var GetAll = Db.GetAllByField<UserInfos>(conn, "UserName", "zhangsan");
+
+                //foreach (var lists in GetAll)
+                //{
+                //    foreach(var item in lists)
+                //    {
+                //        Console.WriteLine(item.Value);
+                //    }
+                //}
+                #endregion
+                #region 更新数据
+                var user = new UserInfos
+                {
+                    UserId = 300174492209123328,
+                    UserName = "wangwu",
+                    UserAddr = "TangShan",
+                    UserRoleId = 2
+                };
+
+                var ok = Db.Update(conn, user);
+
+                Console.WriteLine(ok ? "更新成功" : "更新失败");
                 #endregion
             }
             catch (Exception)

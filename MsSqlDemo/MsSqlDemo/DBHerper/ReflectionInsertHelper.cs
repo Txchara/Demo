@@ -6,7 +6,7 @@ using Microsoft.Data.SqlClient;
 
 namespace SqlDemo
 {    
-    public static class Db
+    public class Db : BaseHelper
     {
         /// <summary>
         /// 插入一条数据
@@ -152,156 +152,245 @@ namespace SqlDemo
             return result;
         }
 
-        #region 获取表名/字段名
-
         /// <summary>
-        /// 获取表名[MyName("UserInfos")]
-        /// </summary>
-        /// <typeparam name="T">实体</typeparam>
-        /// <returns></returns>
-        private static string GetMyTableName<T>() where T : class
-        {
-            // 获取当前泛型类型 T 的 Type 对象
-            var type = typeof(T);
-            // 尝试获取类型上标注的 NameAttribute 特性[MyName("UserInfos")]
-            var nameAttribute = type.GetCustomAttribute<MyNameAttribute>();
-
-            // 判断特性中的 MyName 是否为空，如果不为空则使用 MyName 中的名称，如果没有 MyName ，则使用类名作为表名
-            if (!string.IsNullOrWhiteSpace(nameAttribute?.Name))
-                return nameAttribute.Name;
-
-            return type.Name;
-        }
-
-        /// <summary>
-        /// 获取属性对应的字段名
-        /// </summary>
-        /// <param name="property">属性信息</param>
-        /// <returns>字段名</returns>
-        private static string GetColumnName(PropertyInfo property)
-        {
-            var nameAttribute = property.GetCustomAttribute<MyNameAttribute>();
-
-            if (!string.IsNullOrWhiteSpace(nameAttribute?.Name))
-                return nameAttribute.Name;
-
-            return property.Name;
-        }
-
-        /// <summary>
-        /// 根据实体类型推断主键字段名称（列名）
+        /// 根据某个字段查询数据【不支持lambda】
         /// </summary>
         /// <typeparam name="T">实体类型</typeparam>
-        /// <returns>主键对应的列名</returns>
-        private static string GetIdColumnName<T>() where T : class
+        /// <param name="conn">数据库连接对象</param>
+        /// <param name="columnName">列名</param>
+        /// <param name="value">该列需要查询第一条的值</param>
+        /// <returns>只返回查询到的第一条</returns>
+        public static Dictionary<string, object> GetFirstByField<T>(SqlConnection conn, string columnName, object value) where T : class
+        {
+            if (conn == null || string.IsNullOrWhiteSpace(columnName)) 
+                return new Dictionary<string, object>();
+
+            var type = typeof(T);
+            var tableName = GetMyTableName<T>();
+            var idColumnName = GetIdColumnName<T>();
+
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            if (properties.Length == 0)
+                throw new InvalidOperationException($"{type.Name}里没有公共属性啊？");
+
+            var matchedProperty = properties.FirstOrDefault(
+                    p => string.Equals(GetColumnName(p),columnName,StringComparison.OrdinalIgnoreCase)
+                );
+
+            if (matchedProperty == null)
+                throw new InvalidOperationException($"{type.Name}里找不到列名:{columnName}");
+
+            var realColumnName = GetColumnName(matchedProperty);
+
+            using var command = conn.CreateCommand();
+
+            if(value == null || value == DBNull.Value)
+            {
+                command.CommandText = $@"SELECT TOP 1 *
+                                         FROM [dbo].[{tableName}]
+                                         WHERE [{realColumnName}] IS NULL
+                                         ORDER BY [{idColumnName}] ASC";
+            }
+            else
+            {
+                command.CommandText = $@"SELECT TOP 1 *
+                                         FROM [dbo].[{tableName}]
+                                         WHERE [{realColumnName}] = @value
+                                         ORDER BY [{idColumnName}] ASC";
+
+                command.Parameters.AddWithValue("@value", value);
+            }
+
+            using var reader = command.ExecuteReader();
+
+            if(!reader.Read())
+                return new Dictionary<string, object>();
+
+            var result = new Dictionary<string, object>();
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                var currentColumnName = reader.GetName(i);
+                var currentValue = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                result[currentColumnName] = currentValue;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 根据某个字段查询数据【不支持lambda】
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="conn">数据库连接对象</param>
+        /// <param name="columnName">列名</param>
+        /// <param name="value">该列需要查询所有的数据</param>
+        /// <returns>返回查询到的所有数据</returns>
+        public static List<Dictionary<string,object>> GetAllByField<T>(SqlConnection conn, string columnName, object value) where T : class
+        {
+            if (conn == null || string.IsNullOrWhiteSpace(columnName))
+                return new List<Dictionary<string, object>>();
+
+            var type = typeof(T);
+            var tableName = GetMyTableName<T>();
+            var idColumnName = GetIdColumnName<T>();
+
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            if (properties.Length == 0)
+                throw new InvalidOperationException($"{type.Name}里没有公共属性啊？");
+
+            var matchedProperty = properties.FirstOrDefault(
+                    p => string.Equals(GetColumnName(p), columnName, StringComparison.OrdinalIgnoreCase)
+                );
+
+            if (matchedProperty == null)
+                throw new InvalidOperationException($"{type.Name}里找不到列名:{columnName}");
+
+            var realColumnName = GetColumnName(matchedProperty);
+
+            using var command = conn.CreateCommand();
+
+            command.Parameters.Clear();
+
+            if (value == null || value == DBNull.Value)
+            {
+                command.CommandText = $@"
+                    SELECT *
+                    FROM [dbo].[{tableName}]
+                    WHERE [{realColumnName}] IS NULL
+                    ORDER BY [{idColumnName}] ASC";
+            }
+            else
+            {
+                command.CommandText = $@"
+                    SELECT *
+                    FROM [dbo].[{tableName}]
+                    WHERE [{realColumnName}] = @value
+                    ORDER BY [{idColumnName}] ASC";
+
+                command.Parameters.Add(new SqlParameter("@value", value));
+            }
+
+            using var reader = command.ExecuteReader();
+
+            var result = new List<Dictionary<string, object>>();
+
+            while (reader.Read())
+            {
+                var row = new Dictionary<string, object>(reader.FieldCount);
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var colName = reader.GetName(i);
+                    var colValue = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                    row[colName] = colValue;
+                }
+
+                result.Add(row);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 根据主键更新一条数据
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="conn">数据库连接对象</param>
+        /// <param name="entity">要更新的实体对象，必须带主键值</param>
+        /// <returns>更新成功返回 true，失败返回 false</returns>
+        public static bool Update<T>(SqlConnection conn, T entity) where T : class
         {
             try
             {
-                // 获取泛型类型 T 的 Type 对象
+                // 基本判空
+                if (conn == null || entity == null)
+                    return false;
+
+                // 获取表名
+                var tableName = GetMyTableName<T>();
+
+                // 获取主键列名
+                // 这里会优先找 [MyKey]，找不到再按 UserInfos -> UserId 这种规则推断
+                var idColumnName = GetIdColumnName<T>();
+
+                // 获取当前实体的所有公共实例属性
                 var type = typeof(T);
+                var properties = type
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(p => p.CanRead)
+                    .ToList();
 
-                // 获取该类型的所有公共实例属性
-                // BindingFlags.Public：只获取 public 属性
-                // BindingFlags.Instance：只获取实例属性（排除静态属性）
-                var properties = type.GetProperties(
-                        BindingFlags.Public | BindingFlags.Instance
-                    );
+                if (properties.Count == 0)
+                    return false;
 
-                if (properties.Length == 0)
-                    throw new InvalidOperationException($"{type.Name}里哪他妈有公共属性啊？");
+                // 找到“主键列名”对应的属性
+                // 为什么这里要同时比属性名和映射列名：
+                // 因为属性上可能加了 [MyName("xxx")]，数据库字段名和属性名可能不一致
+                var idProperty = properties.FirstOrDefault(
+                    p => string.Equals(GetColumnName(p), idColumnName, StringComparison.OrdinalIgnoreCase)
+                      || string.Equals(p.Name, idColumnName, StringComparison.OrdinalIgnoreCase)
+                );
 
-                var keyProperties = properties
-                    .Where(
-                        p => p.GetCustomAttribute<MyKeyAttribute>() != null
-                    ).ToList();
+                if (idProperty == null)
+                    return false;
 
-                if (keyProperties.Count > 1)
-                    throw new InvalidOperationException($"{type.Name}上写那么多[Mykey]干鸡毛");
-                if (keyProperties.Count == 1)
-                    return GetColumnName(keyProperties[0]);
+                // 取出主键值，主键为空就无法定位要更新哪一行
+                var idValue = idProperty.GetValue(entity);
+                if (idValue == null || idValue == DBNull.Value)
+                    return false;
 
+                // 拼接 SET 子句
+                var setClauses = new List<string>();
 
-                // 推断默认主键名
-                //通常会有如下命名习惯
-                // UserInfos     -> UserId
-                // RoleInfos     -> RoleId
-                // UserRoleInfos -> UserRoleId
+                using var command = conn.CreateCommand();
 
-                var entityName = type.Name;
-                // 如果类名以 Infos 结尾，就去掉 Infos   UserInfos -> User
-                if (entityName.EndsWith("Infos", StringComparison.OrdinalIgnoreCase))
-                    entityName = entityName.Substring(0, entityName.Length - "Infos".Length);
-                // 如果类名以 Info 结尾，就去掉 Info   UserInfo -> User
-                else if (entityName.EndsWith("Info", StringComparison.OrdinalIgnoreCase))
-                    entityName = entityName.Substring(0, entityName.Length - "Info".Length);
-                // 如果类名只是普通复数 s 结尾，也去掉最后一个 s   Users -> User
-                else if (entityName.EndsWith("s", StringComparison.OrdinalIgnoreCase))
-                    entityName = entityName.Substring(0, entityName.Length - 1);
+                foreach (var property in properties)
+                {
+                    // 主键字段不能出现在 SET 里，只能放到 WHERE 中
+                    if (property == idProperty)
+                        continue;
 
-                // 拼出一个预期的主键字段名。
-                // 例如：
-                // User      -> UserId
-                // Role      -> RoleId
-                // UserRole  -> UserRoleId
-                var expectedIdName = entityName + "Id";
+                    // 获取数据库里的真实列名
+                    var columnName = GetColumnName(property);
 
-                // 优先查找“预期主键名”对应的属性
-                // 这里会同时比较两种名称
-                // 属性本身的名称 p.Name
-                // 属性通过 [MyName] 映射后的数据库字段名 GetColumnName(p)
-                // 而且比较时使用 StringComparison.OrdinalIgnoreCase，
-                // 所以不会区分大小写：
-                // Id / ID / id / iD 都能匹配
-                var matchedProperty = properties.FirstOrDefault(
-                        p => string.Equals(
-                            p.Name,
-                            expectedIdName,
-                            StringComparison.OrdinalIgnoreCase)
-                        ||
-                            string.Equals(
-                                GetColumnName(p),
-                                expectedIdName,
-                                StringComparison.OrdinalIgnoreCase
-                        )
-                    );
+                    // 参数名加前缀，避免和 @id 冲突
+                    var parameterName = "@p_" + property.Name;
 
-                // 如果找到了符合“XxxId”规则的属性，
-                // 直接返回其映射后的数据库列名。
-                if (matchedProperty != null)
-                    return GetColumnName(matchedProperty);
+                    // 属性值为空时写入 DBNull.Value
+                    var value = property.GetValue(entity) ?? DBNull.Value;
 
-                // 如果还没找到，
-                // 再尝试匹配一个最通用的主键名：Id。
-                //
-                // 同样地，这里也同时比较：
-                // 属性名是否叫 Id
-                // 映射后的字段名是否叫 Id
-                // 并且大小写不敏感
-                matchedProperty = properties.FirstOrDefault(
-                        p => string.Equals(
-                            p.Name,
-                            "Id",
-                            StringComparison.OrdinalIgnoreCase)
-                        ||
-                            string.Equals(
-                                GetColumnName(p),
-                                "Id",
-                                StringComparison.OrdinalIgnoreCase
-                        )
-                    );
+                    // 生成类似：[UserName] = @p_UserName
+                    setClauses.Add($"[{columnName}] = {parameterName}");
 
-                // 如果找到了名为 Id 的属性或字段映射，也直接返回。
-                if (matchedProperty != null)
-                    return GetColumnName(matchedProperty);
+                    // 添加参数，避免 SQL 注入
+                    command.Parameters.AddWithValue(parameterName, value);
+                }
 
-                throw new InvalidOperationException($"{type.Name} 主键字段在哪？嗯？为什么不写? 你要炸数据库？");
+                // 如果除了主键外没有别的字段可更新，就直接返回 false
+                if (setClauses.Count == 0)
+                    return false;
+
+                // 主键参数单独添加，供 WHERE 使用
+                command.Parameters.AddWithValue("@id", idValue);
+
+                // 生成最终 SQL
+                command.CommandText = $@"
+                                      UPDATE [dbo].[{tableName}]
+                                      SET {string.Join(", ", setClauses)}
+                                      WHERE [{idColumnName}] = @id";
+
+                // 执行更新
+                var result = command.ExecuteNonQuery();
+
+                // 影响行数大于 0 说明更新成功
+                return result > 0;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new Exception(ex.ToString());
+                return false;
             }
         }
-
-        #endregion
     }
 }
