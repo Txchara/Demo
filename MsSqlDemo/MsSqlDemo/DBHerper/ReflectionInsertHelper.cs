@@ -392,5 +392,48 @@ namespace SqlDemo
                 return false;
             }
         }
+
+        /// <summary>
+        /// 根据主键 Id 删除一条数据
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="conn">数据库连接对象</param>
+        /// <param name="id">主键值</param>
+        /// <returns>删除成功返回 true，失败返回 false</returns>
+        public static bool DeleteById<T>(SqlConnection conn, object id) where T : class
+        {
+            try
+            {
+                if (conn == null || id == null)
+                    return false;
+
+                var tableName = GetMyTableName<T>();
+
+                // 获取主键列名
+                // 这里会优先找 [MyKey]，找不到再按 UserInfos -> UserId 这种规则推断
+                var idColumnName = GetIdColumnName<T>();
+
+                // 创建命令对象
+                using var command = conn.CreateCommand();
+
+                // 删除 SQL
+                command.CommandText = $@"
+                                      DELETE FROM [dbo].[{tableName}]
+                                      WHERE [{idColumnName}] = @id";
+
+                // 避免 SQL 注入
+                command.Parameters.AddWithValue("@id", id);
+
+                // 执行删除
+                var result = command.ExecuteNonQuery();
+
+                // 影响行数大于 0 说明删除成功
+                return result > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
 }

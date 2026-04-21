@@ -85,17 +85,22 @@ namespace SqlDemo
                 //}
                 #endregion
                 #region 更新数据
-                var user = new UserInfos
-                {
-                    UserId = 300174492209123328,
-                    UserName = "wangwu",
-                    UserAddr = "TangShan",
-                    UserRoleId = 2
-                };
+                //var user = new UserInfos
+                //{
+                //    UserId = 300174492209123328,
+                //    UserName = "wangwu",
+                //    UserAddr = "TangShan",
+                //    UserRoleId = 2
+                //};
 
-                var ok = Db.Update(conn, user);
+                //var ok = Db.Update(conn, user);
 
-                Console.WriteLine(ok ? "更新成功" : "更新失败");
+                //Console.WriteLine(ok ? "更新成功" : "更新失败");
+                #endregion
+                #region 根据Id删除数据
+                var ok = Db.DeleteById<UserInfos>(conn, 300174492209123328);
+
+                Console.WriteLine(ok ? "删除成功" : "删除失败");
                 #endregion
             }
             catch (Exception)
