@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 
@@ -219,6 +220,51 @@ namespace SqlDemo
         }
 
         /// <summary>
+        /// 根据某个字段查询数据 【支持lambda】
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="conn"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static Dictionary<string, object>? GetFirstByField<T>(SqlConnection conn, Expression<Func<T, bool>> predicate) where T : class
+        {
+            if (conn == null)
+                return null;
+
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            var tableName = GetMyTableName<T>();
+            var idColumnName = GetIdColumnName<T>();
+
+            using var command = conn.CreateCommand();
+            var whereSql = BuildWhere(predicate, command);
+
+            command.CommandText = $@"
+                                  SELECT TOP 1 *
+                                  FROM [dbo].[{tableName}]
+                                  WHERE {whereSql}
+                                  ORDER BY [{idColumnName}] ASC";
+
+            using var reader = command.ExecuteReader();
+
+            if (!reader.Read())
+                return null;
+
+            var result = new Dictionary<string, object>(reader.FieldCount);
+
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                var columnName = reader.GetName(i);
+                var value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                result[columnName] = value;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 根据某个字段查询数据【不支持lambda】
         /// </summary>
         /// <typeparam name="T">实体类型</typeparam>
@@ -285,6 +331,58 @@ namespace SqlDemo
                     var colName = reader.GetName(i);
                     var colValue = reader.IsDBNull(i) ? null : reader.GetValue(i);
                     row[colName] = colValue;
+                }
+
+                result.Add(row);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        ///  根据某个字段查询数据【支持lambda】
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="conn"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static List<Dictionary<string,object>> GetAllByField<T>(SqlConnection conn, Expression<Func<T, bool>> predicate) where T : class
+        {
+            if (conn == null)
+                return new List<Dictionary<string, object>>();
+
+            if (predicate == null)
+                throw new ArgumentNullException(nameof(predicate));
+
+            var tableName = GetMyTableName<T>();
+
+            var idColumnName = GetIdColumnName<T>();
+
+            // 创建命令对象
+            using var command = conn.CreateCommand();
+
+            // 通过 表达式树解释器 ，把lambda条件翻译成 Sql Where 子句
+            var whereSql = BuildWhere(predicate,command);
+
+            // 拼接查询Sql
+            command.CommandText = $@"SELECT * FROM [dbo].[{tableName}] WHERE {whereSql} ORDER BY [{idColumnName}] ASC";
+
+            // 执行查询
+            using var reader = command.ExecuteReader();
+
+            // 用来保存所有结果
+            var result = new List<Dictionary<string, object>>();
+
+            // 逐行读取结果集
+            while (reader.Read())
+            {
+                var row = new Dictionary<string, object>(reader.FieldCount);
+
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    var columnName = reader.GetName(i);
+                    var value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                    row[columnName] = value;
                 }
 
                 result.Add(row);
