@@ -1,11 +1,47 @@
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 
 namespace SqlDemo
 {
+    public enum QueryLogic
+    {
+        And = 0,
+        Or = 1
+    }
+
+    public enum QueryOperator
+    {
+        Equal = 0,
+        NotEqual = 1,
+        GreaterThan = 2,
+        GreaterThanOrEqual = 3,
+        LessThan = 4,
+        LessThanOrEqual = 5,
+        Contains = 6,
+        StartsWith = 7,
+        EndsWith = 8,
+        IsNull = 9,
+        IsNotNull = 10
+    }
+
+    public sealed class QueryCondition
+    {
+        public string Field { get; set; } = string.Empty;
+
+        public QueryOperator Operator { get; set; } = QueryOperator.Equal;
+
+        public object? Value { get; set; }
+
+        public QueryLogic LogicWithPrevious { get; set; } = QueryLogic.And;
+
+        public bool IgnoreIfValueNull { get; set; } = true;
+    }
+
     public class BaseHelper
     {
 
@@ -121,7 +157,7 @@ namespace SqlDemo
             if (command == null)
                 throw new ArgumentNullException(nameof(command));
 
-            var parameterIndex = 0;
+            var parameterIndex = command.Parameters.Count;
 
             string Parse(Expression expression)
             {
@@ -267,7 +303,12 @@ namespace SqlDemo
                      * StartsWith -> abc%
                      * EndsWith   -> %abc
                      */
-                    var text = argValue?.ToString() ?? string.Empty;
+                    var text = (argValue?.ToString() ?? string.Empty)
+                        .Replace("\\", "\\\\", StringComparison.Ordinal)
+                        .Replace("%", "\\%", StringComparison.Ordinal)
+                        .Replace("_", "\\_", StringComparison.Ordinal)
+                        .Replace("[", "\\[", StringComparison.Ordinal);
+
                     var likeValue = call.Method.Name switch
                     {
                         nameof(string.Contains) => $"%{text}%",
@@ -289,6 +330,101 @@ namespace SqlDemo
 
             /* 从 lambda 主体开始解析。 */
             return Parse(predicate.Body);
+        }
+
+        /// <summary>
+        ///  动态条件解析器
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="conditions"></param>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        protected static string BuildWhere<T>(IEnumerable<QueryCondition> conditions, SqlCommand command) where T : class
+        {
+            if (conditions == null)
+                throw new ArgumentNullException(nameof(conditions));
+
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
+
+            var type = typeof(T);
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            if (properties.Length == 0)
+                throw new InvalidOperationException($"{type.Name} 里没有 public 实例属性。");
+
+            var fieldToColumnMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in properties)
+            {
+                var columnName = GetColumnName(p);
+                if (!fieldToColumnMap.ContainsKey(p.Name))
+                    fieldToColumnMap[p.Name] = columnName;
+                if (!fieldToColumnMap.ContainsKey(columnName))
+                    fieldToColumnMap[columnName] = columnName;
+            }
+
+            var parameterIndex = command.Parameters.Count;
+            var whereBuilder = new StringBuilder();
+            var hasAnyCondition = false;
+
+            foreach (var c in conditions)
+            {
+                if (c == null)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(c.Field))
+                    throw new InvalidOperationException("筛选字段不能为空。");
+
+                if (!fieldToColumnMap.TryGetValue(c.Field, out var columnName))
+                    throw new InvalidOperationException($"{type.Name} 里找不到列名/属性名: {c.Field}");
+
+                var isNullOp = c.Operator == QueryOperator.IsNull || c.Operator == QueryOperator.IsNotNull;
+                if (!isNullOp && (c.Value == null || c.Value == DBNull.Value) && c.IgnoreIfValueNull)
+                    continue;
+
+                if (hasAnyCondition)
+                    whereBuilder.Append(c.LogicWithPrevious == QueryLogic.Or ? " OR " : " AND ");
+
+                string Param(object? value)
+                {
+                    var parameterName = $"@p{parameterIndex++}";
+                    command.Parameters.AddWithValue(parameterName, value ?? DBNull.Value);
+                    return parameterName;
+                }
+
+                var text = (c.Value?.ToString() ?? string.Empty)
+                    .Replace("\\", "\\\\", StringComparison.Ordinal)
+                    .Replace("%", "\\%", StringComparison.Ordinal)
+                    .Replace("_", "\\_", StringComparison.Ordinal)
+                    .Replace("[", "\\[", StringComparison.Ordinal);
+
+                var clause = c.Operator switch
+                {
+                    QueryOperator.Equal => c.Value == null || c.Value == DBNull.Value
+                        ? $"[{columnName}] IS NULL"
+                        : $"[{columnName}] = {Param(c.Value)}",
+
+                    QueryOperator.NotEqual => c.Value == null || c.Value == DBNull.Value
+                        ? $"[{columnName}] IS NOT NULL"
+                        : $"[{columnName}] <> {Param(c.Value)}",
+
+                    QueryOperator.GreaterThan => $"[{columnName}] > {Param(c.Value)}",
+                    QueryOperator.GreaterThanOrEqual => $"[{columnName}] >= {Param(c.Value)}",
+                    QueryOperator.LessThan => $"[{columnName}] < {Param(c.Value)}",
+                    QueryOperator.LessThanOrEqual => $"[{columnName}] <= {Param(c.Value)}",
+                    QueryOperator.Contains => $"[{columnName}] LIKE {Param($"%{text}%")} ESCAPE '\\'",
+                    QueryOperator.StartsWith => $"[{columnName}] LIKE {Param($"{text}%")} ESCAPE '\\'",
+                    QueryOperator.EndsWith => $"[{columnName}] LIKE {Param($"%{text}")} ESCAPE '\\'",
+                    QueryOperator.IsNull => $"[{columnName}] IS NULL",
+                    QueryOperator.IsNotNull => $"[{columnName}] IS NOT NULL",
+                    _ => throw new NotSupportedException($"不支持操作符: {c.Operator}")
+                };
+
+                whereBuilder.Append('(').Append(clause).Append(')');
+                hasAnyCondition = true;
+            }
+
+            return whereBuilder.ToString();
         }
     }
 }
