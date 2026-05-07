@@ -1,25 +1,95 @@
+﻿using System;
+using System.Threading.Tasks;
 using Tool.Core.Network;
 
-Console.Write("Please input address: ");
-string? address = Console.ReadLine();
+namespace MainProcess;
 
-if (string.IsNullOrWhiteSpace(address))
+public class Program
 {
-    Console.WriteLine("Address is empty.");
-    return;
+    public static async Task Main(string[] args)
+    {
+        var call = new Call();
+        await call.Run();
+    }
 }
 
-var pingTool = new PingTool();
-PingResult result = await pingTool.PingAsync(address);
-
-Console.WriteLine();
-Console.WriteLine($"Address       : {result.Address}");
-Console.WriteLine($"Success       : {result.Success}");
-Console.WriteLine($"Status        : {result.Status}");
-Console.WriteLine($"IP Address    : {result.IpAddress ?? "-"}");
-Console.WriteLine($"Roundtrip(ms) : {result.RoundtripTime}");
-
-if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
+public class Call
 {
-    Console.WriteLine($"Error         : {result.ErrorMessage}");
+    private bool _running = true;
+
+    public async Task Run()
+    {
+        while (_running)
+        {
+            Console.WriteLine("输入 1 调用 PingTool");
+            Console.WriteLine("输入 0 退出程序");
+
+            string? num = Console.ReadLine();
+
+            Func<Task> action = num switch
+            {
+                "1" => UsePingTool,
+                "0" => Exit,
+                _ => () =>
+                {
+                    RETURN(num);
+                    return Task.CompletedTask;
+                }
+            };
+
+            await action();
+        }
+    }
+
+    /// <summary>
+    /// 调用Tool主体
+    /// </summary>
+    /// <returns></returns>
+    private async Task UsePingTool()
+    {
+        Console.Write("Please input address: ");
+        string? address = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(address))
+        {
+            Console.WriteLine("Address is empty.");
+            return;
+        }
+
+        var pingTool = new PingTool();
+        PingResult result = await pingTool.PingAsync(address);
+
+        Console.WriteLine();
+        Console.WriteLine($"Address       : {result.Address}");
+        Console.WriteLine($"Success       : {result.Success}");
+        Console.WriteLine($"Status        : {result.Status}");
+        Console.WriteLine($"IP Address    : {result.IpAddress ?? "-"}");
+        Console.WriteLine($"Roundtrip(ms) : {result.RoundtripTime}");
+
+        if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
+        {
+            Console.WriteLine($"Error         : {result.ErrorMessage}");
+        }
+    }
+
+    /// <summary>
+    /// 输入异常提示
+    /// </summary>
+    /// <param name="num"></param>
+    private static void RETURN(string? num)
+    {
+        if(string.IsNullOrWhiteSpace(num)) Console.WriteLine($"不要用脚踩键盘");
+        else Console.WriteLine($"你j8输入{num}什么意思？眼瞎？看清楚再输");
+    }
+
+    /// <summary>
+    /// 退出
+    /// </summary>
+    /// <returns></returns>
+    private Task Exit()
+    {
+        Console.WriteLine("程序已退出");
+        _running = false;
+        return Task.CompletedTask;
+    }
 }
