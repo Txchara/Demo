@@ -3,23 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Console", "Tool.Console\Tool.Console.csproj", "{9FF08E1C-2ED4-45EF-B312-AB86338AE95C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool.Console", "Tool.Console\Tool.Console.csproj", "{9FF08E1C-2ED4-45EF-B312-AB86338AE95C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tool.Core", "Tool.Core", "{FF53C4B8-BCDD-43A5-913F-4D0D6B1DEB87}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Core", "Tool.Core\Tool.Core.csproj", "{D52AB2C6-0DC2-435F-93A9-4B809307DE2D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tool.UI", "Tool.UI", "{2B416E93-ECF6-4759-8DD3-98FF3EABF89F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileTools", "FileTools", "{6024F88A-C74A-4048-8B69-75E5BCD309F3}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetTools", "NetTools", "{C3B28C48-F287-45EE-9DE9-E90EEE5199EE}"
-	ProjectSection(SolutionItems) = preProject
-		Tool.Core\Network\PingResult.cs = Tool.Core\Network\PingResult.cs
-		Tool.Core\Network\PingTool.cs = Tool.Core\Network\PingTool.cs
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SysTools", "SysTools", "{CAF0F552-B0A8-4762-BF2E-E8D31439CA98}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{A51488B0-8C3C-4905-B037-1A900F6C742D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.UI", "Tool.UI\Tool.UI.csproj", "{459F4B83-101F-4164-9AE5-5C1491A25C90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,15 +19,17 @@ Global
 		{9FF08E1C-2ED4-45EF-B312-AB86338AE95C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FF08E1C-2ED4-45EF-B312-AB86338AE95C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FF08E1C-2ED4-45EF-B312-AB86338AE95C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D52AB2C6-0DC2-435F-93A9-4B809307DE2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D52AB2C6-0DC2-435F-93A9-4B809307DE2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D52AB2C6-0DC2-435F-93A9-4B809307DE2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D52AB2C6-0DC2-435F-93A9-4B809307DE2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{459F4B83-101F-4164-9AE5-5C1491A25C90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{459F4B83-101F-4164-9AE5-5C1491A25C90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{459F4B83-101F-4164-9AE5-5C1491A25C90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{459F4B83-101F-4164-9AE5-5C1491A25C90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{6024F88A-C74A-4048-8B69-75E5BCD309F3} = {FF53C4B8-BCDD-43A5-913F-4D0D6B1DEB87}
-		{C3B28C48-F287-45EE-9DE9-E90EEE5199EE} = {FF53C4B8-BCDD-43A5-913F-4D0D6B1DEB87}
-		{CAF0F552-B0A8-4762-BF2E-E8D31439CA98} = {FF53C4B8-BCDD-43A5-913F-4D0D6B1DEB87}
-		{A51488B0-8C3C-4905-B037-1A900F6C742D} = {FF53C4B8-BCDD-43A5-913F-4D0D6B1DEB87}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9A679D64-20B1-42BC-95FE-7C793B396BD2}
