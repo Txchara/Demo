@@ -46,6 +46,12 @@
                     <ListBoxItem Tag="Temperature" Padding="10,8">
                         <TextBlock FontSize="14" Text="温度监控" />
                     </ListBoxItem>
+                    <ListBoxItem Tag="MacAddress" Padding="10,8">
+                        <TextBlock FontSize="14" Text="MAC 地址" />
+                    </ListBoxItem>
+                    <ListBoxItem Tag="LocalIp" Padding="10,8">
+                        <TextBlock FontSize="14" Text="本机 IP" />
+                    </ListBoxItem>
                 </ListBox>
             </Grid>
         </Border>

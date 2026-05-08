@@ -1,4 +1,4 @@
-﻿using Tool.Core.NetTools;
+using Tool.Core.NetTools;
 using Tool.Core.SysTools;
 
 namespace MainProcess;
@@ -23,6 +23,8 @@ public class Call
             Console.WriteLine("输入 1 调用 PingTool");
             Console.WriteLine("输入 2 调用 SystemInfoTool");
             Console.WriteLine("输入 3 调用 TemperatureTool");
+            Console.WriteLine("输入 4 调用 MacAddressTool");
+            Console.WriteLine("输入 5 调用 LocalIpTool");
             Console.WriteLine("输入 0 退出程序");
 
             string? num = Console.ReadLine();
@@ -32,6 +34,8 @@ public class Call
                 "1" => UsePingTool,
                 "2" => UseSystemInfoTool,
                 "3" => UseTemperatureTool,
+                "4" => UseMacAddressTool,
+                "5" => UseLocalIpTool,
                 "0" => Exit,
                 _ => () =>
                 {
@@ -47,8 +51,7 @@ public class Call
     /// <summary>
     /// 调用 PingTool 主体
     /// </summary>
-    /// <returns></returns>
-    private async Task UsePingTool() 
+    private async Task UsePingTool()
     {
         Console.Write("Please input address: ");
         string? address = Console.ReadLine();
@@ -73,12 +76,13 @@ public class Call
         {
             Console.WriteLine($"Error         : {result.ErrorMessage}");
         }
+
+        Console.WriteLine();
     }
 
     /// <summary>
     /// 调用 SystemInfoTool 主体
     /// </summary>
-    /// <returns></returns>
     private Task UseSystemInfoTool()
     {
         var systemInfoTool = new SystemInfoTool();
@@ -124,32 +128,28 @@ public class Call
     }
 
     /// <summary>
-    ///  调用 TemperatureTool 主体
+    /// 调用 TemperatureTool 主体
     /// </summary>
-    /// <returns></returns>
     private Task UseTemperatureTool()
     {
         var temperatureTool = new TemperatureTool();
         List<SensorReading> readings = temperatureTool.GetSensorReadings();
 
         Console.WriteLine();
-        Console.WriteLine("===== 硬件传感器信息 =====");
+        Console.WriteLine("===== 温度信息 =====");
 
         if (readings.Count == 0)
         {
-            Console.WriteLine("未获取到传感器数据。");
-            Console.WriteLine("可能原因：当前机器不支持、未开启对应传感器、权限不足，或当前硬件没有暴露这些信息。");
+            Console.WriteLine("未获取到温度数据。");
             Console.WriteLine();
             return Task.CompletedTask;
         }
 
         foreach (SensorReading reading in readings
                      .OrderBy(x => x.HardwareType)
-                     .ThenBy(x => x.Category)
                      .ThenBy(x => x.SensorName))
         {
-            Console.WriteLine(
-                $"[{reading.HardwareType}] {reading.HardwareName} | {reading.Category} | {reading.SensorName} = {reading.Value:F2} {reading.Unit}");
+            Console.WriteLine($"[{reading.HardwareType}] {reading.HardwareName} | {reading.SensorName} = {reading.Value:F2} {reading.Unit}");
         }
 
         Console.WriteLine();
@@ -157,19 +157,83 @@ public class Call
     }
 
     /// <summary>
+    /// 调用 MacAddressTool 主体
+    /// </summary>
+    private Task UseMacAddressTool()
+    {
+        var macAddressTool = new MacAddressTool();
+        List<MacAddressInfo> result = macAddressTool.GetMacAddresses();
+
+        Console.WriteLine();
+        Console.WriteLine("===== MAC 地址信息 =====");
+
+        if (result.Count == 0)
+        {
+            Console.WriteLine("未获取到可用 MAC 地址");
+            Console.WriteLine();
+            return Task.CompletedTask;
+        }
+
+        foreach (MacAddressInfo item in result)
+        {
+            Console.WriteLine($"Name         : {item.Name}");
+            Console.WriteLine($"Description  : {item.Description}");
+            Console.WriteLine($"Type         : {item.InterfaceType}");
+            Console.WriteLine($"MAC Address  : {item.MacAddress}");
+            Console.WriteLine();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 调用 LocalIpTool 主体
+    /// </summary>
+    private Task UseLocalIpTool()
+    {
+        var localIpTool = new LocalIpTool();
+        List<LocalIpInfo> result = localIpTool.GetLocalIps();
+
+        Console.WriteLine();
+        Console.WriteLine("===== 本机 IP 信息 =====");
+
+        if (result.Count == 0)
+        {
+            Console.WriteLine("未获取到可用本机 IP");
+            Console.WriteLine();
+            return Task.CompletedTask;
+        }
+
+        foreach (LocalIpInfo item in result)
+        {
+            Console.WriteLine($"Name         : {item.Name}");
+            Console.WriteLine($"Description  : {item.Description}");
+            Console.WriteLine($"Type         : {item.InterfaceType}");
+            Console.WriteLine($"Local IP     : {item.IpAddress}");
+            Console.WriteLine();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// 输入异常提示
     /// </summary>
-    /// <param name="num"></param>
     private static void RETURN(string? num)
     {
-        if (string.IsNullOrWhiteSpace(num)) Console.WriteLine("不要用脚踩键盘");
-        else Console.WriteLine($"你j8输入{num}什么意思？眼瞎？看清楚再输");
+        if (string.IsNullOrWhiteSpace(num))
+        {
+            Console.WriteLine("不要用脚踩键盘");
+        }
+        else
+        {
+            Console.WriteLine($"你j8输入{num}什么意思？眼瞎？看清楚再输");
+        }
     }
 
     /// <summary>
     /// 退出
     /// </summary>
-    /// <returns></returns>
     private Task Exit()
     {
         Console.WriteLine("程序已退出");

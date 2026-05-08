@@ -9,6 +9,8 @@ public partial class MainWindow : Window
     private readonly PingToolView _pingToolView = new();
     private readonly SystemInfoToolView _systemInfoToolView = new();
     private readonly TemperatureToolView _temperatureToolView = new();
+    private readonly MacAddressToolView _macAddressToolView = new();
+    private readonly LocalIpToolView _localIpToolView = new();
 
     public MainWindow()
     {
@@ -41,8 +43,20 @@ public partial class MainWindow : Window
 
             case "Temperature":
                 ToolTitleTextBlock.Text = "温度监控";
-                ToolDescriptionTextBlock.Text = "查看硬件温度、风扇、电压、频率和负载等传感器数据。";
+                ToolDescriptionTextBlock.Text = "查看当前计算机可读取到的硬件温度信息。";
                 ToolContentHost.Content = _temperatureToolView;
+                break;
+
+            case "MacAddress":
+                ToolTitleTextBlock.Text = "MAC 地址";
+                ToolDescriptionTextBlock.Text = "查看当前计算机已启用网卡的 MAC 地址信息。";
+                ToolContentHost.Content = _macAddressToolView;
+                break;
+
+            case "LocalIp":
+                ToolTitleTextBlock.Text = "本机 IP";
+                ToolDescriptionTextBlock.Text = "查看当前计算机已启用网卡的本机 IPv4 地址信息。";
+                ToolContentHost.Content = _localIpToolView;
                 break;
         }
     }
