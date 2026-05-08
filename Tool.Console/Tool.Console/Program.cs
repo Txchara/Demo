@@ -21,7 +21,8 @@ public class Call
         while (_running)
         {
             Console.WriteLine("输入 1 调用 PingTool");
-            Console.WriteLine("输入 2 查看系统信息");
+            Console.WriteLine("输入 2 调用 SystemInfoTool");
+            Console.WriteLine("输入 3 调用 TemperatureTool");
             Console.WriteLine("输入 0 退出程序");
 
             string? num = Console.ReadLine();
@@ -30,6 +31,7 @@ public class Call
             {
                 "1" => UsePingTool,
                 "2" => UseSystemInfoTool,
+                "3" => UseTemperatureTool,
                 "0" => Exit,
                 _ => () =>
                 {
@@ -46,7 +48,7 @@ public class Call
     /// 调用 PingTool 主体
     /// </summary>
     /// <returns></returns>
-    private async Task UsePingTool()
+    private async Task UsePingTool() 
     {
         Console.Write("Please input address: ");
         string? address = Console.ReadLine();
@@ -115,6 +117,39 @@ public class Call
             {
                 Console.WriteLine($"- {disk.Name} [{disk.Format}] Total: {disk.TotalSizeGb:F2} GB, Free: {disk.FreeSizeGb:F2} GB");
             }
+        }
+
+        Console.WriteLine();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///  调用 TemperatureTool 主体
+    /// </summary>
+    /// <returns></returns>
+    private Task UseTemperatureTool()
+    {
+        var temperatureTool = new TemperatureTool();
+        List<SensorReading> readings = temperatureTool.GetSensorReadings();
+
+        Console.WriteLine();
+        Console.WriteLine("===== 硬件传感器信息 =====");
+
+        if (readings.Count == 0)
+        {
+            Console.WriteLine("未获取到传感器数据。");
+            Console.WriteLine("可能原因：当前机器不支持、未开启对应传感器、权限不足，或当前硬件没有暴露这些信息。");
+            Console.WriteLine();
+            return Task.CompletedTask;
+        }
+
+        foreach (SensorReading reading in readings
+                     .OrderBy(x => x.HardwareType)
+                     .ThenBy(x => x.Category)
+                     .ThenBy(x => x.SensorName))
+        {
+            Console.WriteLine(
+                $"[{reading.HardwareType}] {reading.HardwareName} | {reading.Category} | {reading.SensorName} = {reading.Value:F2} {reading.Unit}");
         }
 
         Console.WriteLine();
