@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using Tool.UI.Views;
 
@@ -11,6 +11,7 @@ public partial class MainWindow : Window
     private readonly TemperatureToolView _temperatureToolView = new();
     private readonly MacAddressToolView _macAddressToolView = new();
     private readonly LocalIpToolView _localIpToolView = new();
+    private readonly BatchFileCreateToolView _batchFileCreateToolView = new();
 
     public MainWindow()
     {
@@ -57,6 +58,12 @@ public partial class MainWindow : Window
                 ToolTitleTextBlock.Text = "本机 IP";
                 ToolDescriptionTextBlock.Text = "查看当前计算机已启用网卡的本机 IPv4 地址信息。";
                 ToolContentHost.Content = _localIpToolView;
+                break;
+
+            case "BatchFileCreate":
+                ToolTitleTextBlock.Text = "批量创建文件";
+                ToolDescriptionTextBlock.Text = "导入 Excel 文件名称列表，按顺序批量创建空文件。";
+                ToolContentHost.Content = _batchFileCreateToolView;
                 break;
         }
     }

@@ -18,15 +18,15 @@ public class Call
 
     public async Task Run()
     {
-        while (_running)
-        {
-            Console.WriteLine("输入 1 调用 PingTool");
-            Console.WriteLine("输入 2 调用 SystemInfoTool");
-            Console.WriteLine("输入 3 调用 TemperatureTool");
-            Console.WriteLine("输入 4 调用 MacAddressTool");
-            Console.WriteLine("输入 5 调用 LocalIpTool");
-            Console.WriteLine("输入 0 退出程序");
+        Console.WriteLine("输入 1 调用 PingTool");
+        Console.WriteLine("输入 2 调用 SystemInfoTool");
+        Console.WriteLine("输入 3 调用 TemperatureTool");
+        Console.WriteLine("输入 4 调用 MacAddressTool");
+        Console.WriteLine("输入 5 调用 LocalIpTool");
+        Console.WriteLine("输入 0 退出程序");
 
+        while (_running)
+        {           
             string? num = Console.ReadLine();
 
             Func<Task> action = num switch

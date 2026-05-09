@@ -1,0 +1,215 @@
+﻿<UserControl x:Class="Tool.UI.Views.BatchFileCreateToolView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="0,0,4,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="220" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="220" />
+            </Grid.RowDefinitions>
+
+            <Border Padding="16"
+                    Background="#FBFBFC"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <TextBlock FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Text="第一步：选 Excel" />
+                        <TextBlock Margin="0,6,0,0"
+                                   Foreground="#6B7280"
+                                   Text="如果你已经有 Excel，直接选它就可以，不用先点“生成示例表格”。" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="Excel 路径" />
+                        <TextBox x:Name="ExcelPathTextBox"
+                                 Grid.Column="2"
+                                 Height="36"
+                                 VerticalContentAlignment="Center" />
+                        <Button x:Name="BrowseExcelButton"
+                                Grid.Column="4"
+                                Height="36"
+                                Click="BrowseExcelButton_Click"
+                                Content="选择文件" />
+                        <Button x:Name="ImportNamesButton"
+                                Grid.Column="6"
+                                Height="36"
+                                Click="ImportNamesButton_Click"
+                                Content="读取文件名" />
+                    </Grid>
+
+                    <DockPanel Grid.Row="4">
+                        <Button x:Name="GenerateTemplateButton"
+                                DockPanel.Dock="Left"
+                                Width="140"
+                                Height="36"
+                                Click="GenerateTemplateButton_Click"
+                                Content="生成示例表格" />
+                        <TextBlock x:Name="ImportStatusTextBlock"
+                                   Margin="12,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="#6B7280"
+                                   Text="也可以直接选择你自己的 Excel。" />
+                    </DockPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2"
+                    Padding="16"
+                    Background="White"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <TextBlock FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Text="第二步：设置保存方式" />
+                        <TextBlock Margin="0,6,0,0"
+                                   Foreground="#6B7280"
+                                   Text="读到文件名后，再设置保存位置、文件类型和数量。" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="保存位置" />
+                        <TextBox x:Name="TargetDirectoryTextBox"
+                                 Grid.Column="2"
+                                 Height="36"
+                                 VerticalContentAlignment="Center" />
+                        <Button x:Name="UseExcelDirectoryButton"
+                                Grid.Column="4"
+                                Height="36"
+                                Click="UseExcelDirectoryButton_Click"
+                                Content="用 Excel 同文件夹" />
+                    </Grid>
+
+                    <Grid Grid.Row="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock VerticalAlignment="Center"
+                                   Text="文件类型" />
+                        <TextBox x:Name="ExtensionTextBox"
+                                 Grid.Column="2"
+                                 Height="36"
+                                 VerticalContentAlignment="Center" />
+                        <TextBlock Grid.Column="4"
+                                   VerticalAlignment="Center"
+                                   Text="要创建几个" />
+                        <TextBox x:Name="CountTextBox"
+                                 Grid.Column="6"
+                                 Height="36"
+                                 VerticalContentAlignment="Center" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="4"
+                    Padding="16"
+                    Background="White"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <TextBlock x:Name="ImportedCountTextBlock"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Text="还没有读到文件名" />
+                        <TextBlock Margin="0,6,0,0"
+                                   Foreground="#6B7280"
+                                   Text="这里会显示从 Excel 里读到的文件名，重复或不能用的名字会自动处理。" />
+                    </StackPanel>
+
+                    <ListBox x:Name="PreviewListBox"
+                             Grid.Row="2"
+                             BorderThickness="0"
+                             Background="#FAFAFA"
+                             FontFamily="Consolas" />
+                </Grid>
+            </Border>
+
+            <DockPanel Grid.Row="6">
+                <Button x:Name="CreateFilesButton"
+                        DockPanel.Dock="Left"
+                        Width="140"
+                        Height="36"
+                        Click="CreateFilesButton_Click"
+                        Content="开始生成文件" />
+                <TextBlock x:Name="CreateSummaryTextBlock"
+                           Margin="12,0,0,0"
+                           VerticalAlignment="Center"
+                           Foreground="#6B7280"
+                           Text="还没有开始生成。" />
+            </DockPanel>
+
+            <TextBox x:Name="ResultTextBox"
+                     Grid.Row="8"
+                     IsReadOnly="True"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     TextWrapping="Wrap"
+                     FontFamily="Consolas" />
+        </Grid>
+    </ScrollViewer>
+</UserControl>
