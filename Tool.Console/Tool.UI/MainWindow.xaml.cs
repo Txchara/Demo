@@ -11,6 +11,7 @@ public partial class MainWindow : Window
     private readonly TemperatureToolView _temperatureToolView = new();
     private readonly MacAddressToolView _macAddressToolView = new();
     private readonly LocalIpToolView _localIpToolView = new();
+    private readonly ProcessViewerToolView _processViewerToolView = new();
     private readonly BatchFileCreateToolView _batchFileCreateToolView = new();
 
     public MainWindow()
@@ -58,6 +59,12 @@ public partial class MainWindow : Window
                 ToolTitleTextBlock.Text = "本机 IP";
                 ToolDescriptionTextBlock.Text = "查看当前计算机已启用网卡的本机 IPv4 地址信息。";
                 ToolContentHost.Content = _localIpToolView;
+                break;
+
+            case "ProcessViewer":
+                ToolTitleTextBlock.Text = "查看进程";
+                ToolDescriptionTextBlock.Text = "查看当前系统进程的 PID、窗口标题、优先级、内存占用和读取状态。";
+                ToolContentHost.Content = _processViewerToolView;
                 break;
 
             case "BatchFileCreate":
