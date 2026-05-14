@@ -1,5 +1,10 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Tool.Core.SysTools;
 
 namespace Tool.UI.Views;
@@ -8,12 +13,14 @@ public partial class ProcessViewerToolView : UserControl
 {
     private readonly ProcessViewerTool _processViewerTool = new();
     private List<ProcessInfo> _cachedProcesses = new();
+    private bool _isSettingPriority;
 
     public ProcessViewerToolView()
     {
         InitializeComponent();
         SortFieldComboBox.SelectedIndex = 0;
         SortOrderComboBox.SelectedIndex = 0;
+        ProcessDataGrid.MouseDoubleClick += ProcessDataGrid_MouseDoubleClick;
         Loaded += ProcessViewerToolView_Loaded;
     }
 
@@ -57,6 +64,45 @@ public partial class ProcessViewerToolView : UserControl
         ApplyView();
     }
 
+    private async void ProcessDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (_isSettingPriority)
+        {
+            return;
+        }
+
+        DependencyObject source = e.OriginalSource as DependencyObject;
+        if (source == null)
+        {
+            return;
+        }
+
+        DataGridRow row = ItemsControl.ContainerFromElement(ProcessDataGrid, source) as DataGridRow;
+        if (row == null)
+        {
+            return;
+        }
+
+        ProcessInfo selected = ProcessDataGrid.SelectedItem as ProcessInfo;
+        if (selected == null)
+        {
+            return;
+        }
+
+        MessageBoxResult confirmResult = MessageBox.Show(
+            string.Format("是否将进程“{0}”(PID: {1}) 的优先级设置为最低？", selected.ProcessName, selected.ProcessId),
+            "确认设置",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Question);
+
+        if (confirmResult != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        await SetSelectedProcessPriorityAsync(selected);
+    }
+
     private async Task LoadCacheAsync()
     {
         RefreshButton.IsEnabled = false;
@@ -64,6 +110,7 @@ public partial class ProcessViewerToolView : UserControl
         SortFieldComboBox.IsEnabled = false;
         SortOrderComboBox.IsEnabled = false;
         SearchTextBox.IsEnabled = false;
+        ProcessDataGrid.IsEnabled = false;
 
         try
         {
@@ -71,7 +118,7 @@ public partial class ProcessViewerToolView : UserControl
             _cachedProcesses = await Task.Run(() => _processViewerTool.GetProcesses());
             ApplyView();
         }
-        catch (Exception ex)
+        catch
         {
             _cachedProcesses = new List<ProcessInfo>();
             ProcessDataGrid.ItemsSource = null;
@@ -85,6 +132,7 @@ public partial class ProcessViewerToolView : UserControl
             SortFieldComboBox.IsEnabled = true;
             SortOrderComboBox.IsEnabled = true;
             SearchTextBox.IsEnabled = true;
+            ProcessDataGrid.IsEnabled = true;
         }
     }
 
@@ -125,5 +173,58 @@ public partial class ProcessViewerToolView : UserControl
         ProcessDataGrid.ItemsSource = null;
         ProcessDataGrid.ItemsSource = viewList;
         SummaryTextBlock.Text = $"当前共 {viewList.Count} 个进程";
+    }
+
+    private async Task SetSelectedProcessPriorityAsync(ProcessInfo selected)
+    {
+        _isSettingPriority = true;
+        RefreshButton.IsEnabled = false;
+        OnlyWithWindowCheckBox.IsEnabled = false;
+        SortFieldComboBox.IsEnabled = false;
+        SortOrderComboBox.IsEnabled = false;
+        SearchTextBox.IsEnabled = false;
+        ProcessDataGrid.IsEnabled = false;
+
+        try
+        {
+            // 设置优先级放到后台执行，避免界面线程被系统调用阻塞。
+            SetProcessPriorityResult result = await Task.Run(() => _processViewerTool.SetLowestPriority(selected.ProcessId));
+
+            if (result.Success)
+            {
+                MessageBox.Show(
+                    $"设置成功。\n进程：{result.ProcessName}\nPID：{result.ProcessId}\n原优先级：{result.OldPriority}\n当前优先级：{result.NewPriority}",
+                    "设置结果",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                await LoadCacheAsync();
+                return;
+            }
+
+            MessageBox.Show(
+                $"设置失败：{result.ErrorMessage}",
+                "设置结果",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"设置失败：{ex.Message}",
+                "设置结果",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally
+        {
+            _isSettingPriority = false;
+            RefreshButton.IsEnabled = true;
+            OnlyWithWindowCheckBox.IsEnabled = true;
+            SortFieldComboBox.IsEnabled = true;
+            SortOrderComboBox.IsEnabled = true;
+            SearchTextBox.IsEnabled = true;
+            ProcessDataGrid.IsEnabled = true;
+        }
     }
 }

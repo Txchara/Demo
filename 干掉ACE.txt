@@ -1,0 +1,16 @@
+ 第1步 — 搜索进程
+  已有能力，GetProcesses() 返回全量列表，在 UI 层按名称过滤即可，无需改 Core。                                                                                                                                                               
+  第2步 — 设置优先级                                                                                                                                                                                                                          esc to interrupt
+  SetLowestPriority 已实现，但当前写死为 Idle。需要改成可传入 ProcessPriorityClass 参数，或新增一个专门设置为 BelowNormal 的方法。
+
+  第3步 — 设置 CPU 亲和性（关键难点）
+  Process.ProcessorAffinity 是一个 IntPtr，本质是位掩码，每一位对应一个逻辑核心。
+
+  "只勾选最后一个核心"的计算：
+  // 假设有 N 个逻辑核心，最后一个核心的掩码：
+  int coreCount = Environment.ProcessorCount; // 例如 16
+  IntPtr lastCoreMask = new IntPtr(1 << (coreCount - 1)); // 第16位 = 0x8000
+  process.ProcessorAffinity = lastCoreMask;
+
+  权限问题
+  设置优先级和亲和性都需要对目标进程有 PROCESS_SET_INFORMATION 权限。SGuard 是系统级保护进程，大概率会抛 Access Denied，需要以管理员身份运行程序才有机会成功，且反作弊驱动本身可能会拦截。
