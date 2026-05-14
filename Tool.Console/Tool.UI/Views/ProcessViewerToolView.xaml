@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Tool.UI.Views.ProcessViewerToolView"
+<UserControl x:Class="Tool.UI.Views.ProcessViewerToolView"
                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid>
@@ -9,21 +9,26 @@
         </Grid.RowDefinitions>
 
         <DockPanel LastChildFill="False">
+            <!-- 右侧按钮组：刷新 + 限制进程，顺序从右往左 Dock -->
             <Button x:Name="RefreshButton"
                       DockPanel.Dock="Right"
                       Width="120"
                       Height="36"
+                      Margin="0,0,0,0"
                       Click="RefreshButton_Click"
                       Content="刷新列表" />
 
+            <Button x:Name="ApplyLimitsButton"
+                      DockPanel.Dock="Right"
+                      Width="140"
+                      Height="36"
+                      Margin="0,0,8,0"
+                      IsEnabled="False"
+                      Click="ApplyLimitsButton_Click"
+                      Content="限制选中进程" />
+
             <StackPanel Orientation="Horizontal"
                           VerticalAlignment="Center">
-                <CheckBox x:Name="OnlyWithWindowCheckBox"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center"
-                            Checked="OnlyWithWindowCheckBox_Changed"
-                            Unchecked="OnlyWithWindowCheckBox_Changed"
-                            Content="只看有窗口的进程" />
 
                 <TextBlock VerticalAlignment="Center"
                              Text="排序字段" />
@@ -70,7 +75,8 @@
                     GridLinesVisibility="Horizontal"
                     HeadersVisibility="Column"
                     AlternatingRowBackground="#FAFAFA"
-                    RowHeaderWidth="0">
+                    RowHeaderWidth="0"
+                    SelectionChanged="ProcessDataGrid_SelectionChanged">
             <DataGrid.Columns>
                 <DataGridTextColumn Width="90"
                                       Binding="{Binding ProcessId}"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -64,6 +64,14 @@ public partial class ProcessViewerToolView : UserControl
         ApplyView();
     }
 
+    /// <summary>
+    /// 单击行时同步更新"限制选中进程"按钮的可用状态。
+    /// </summary>
+    private void ProcessDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        ApplyLimitsButton.IsEnabled = ProcessDataGrid.SelectedItem is ProcessInfo && !_isSettingPriority;
+    }
+
     private async void ProcessDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if (_isSettingPriority)
@@ -90,10 +98,10 @@ public partial class ProcessViewerToolView : UserControl
         }
 
         MessageBoxResult confirmResult = MessageBox.Show(
-            string.Format("是否将进程“{0}”(PID: {1}) 的优先级设置为最低？", selected.ProcessName, selected.ProcessId),
-            "确认设置",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Question);
+                $"是否将进程 \"{selected.ProcessName}\" (PID: {selected.ProcessId}) 的优先级设置为最低？",
+                "确认设置",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question);
 
         if (confirmResult != MessageBoxResult.OK)
         {
@@ -103,10 +111,43 @@ public partial class ProcessViewerToolView : UserControl
         await SetSelectedProcessPriorityAsync(selected);
     }
 
+    /// <summary>
+    /// 点击"限制选中进程"按钮：弹确认框后异步执行优先级 + CPU 亲和性限制，完成后弹结果提示。
+    /// </summary>
+    private async void ApplyLimitsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isSettingPriority)
+        {
+            return;
+        }
+
+        ProcessInfo selected = ProcessDataGrid.SelectedItem as ProcessInfo;
+        if (selected == null)
+        {
+            return;
+        }
+
+        MessageBoxResult confirmResult = MessageBox.Show(
+                $"即将对进程 \"{selected.ProcessName}\" (PID: {selected.ProcessId}) 执行以下操作：\n\n" +
+                "  · 优先级 → 空闲（最低）\n" +
+                "  · CPU 相关性 → 仅最后一个核心\n\n" +
+                "确认继续？",
+                "确认限制",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question);
+
+        if (confirmResult != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        await ApplyLimitsAsync(selected);
+    }
+
     private async Task LoadCacheAsync()
     {
         RefreshButton.IsEnabled = false;
-        OnlyWithWindowCheckBox.IsEnabled = false;
+        ApplyLimitsButton.IsEnabled = false;
         SortFieldComboBox.IsEnabled = false;
         SortOrderComboBox.IsEnabled = false;
         SearchTextBox.IsEnabled = false;
@@ -128,22 +169,18 @@ public partial class ProcessViewerToolView : UserControl
         finally
         {
             RefreshButton.IsEnabled = true;
-            OnlyWithWindowCheckBox.IsEnabled = true;
             SortFieldComboBox.IsEnabled = true;
             SortOrderComboBox.IsEnabled = true;
             SearchTextBox.IsEnabled = true;
             ProcessDataGrid.IsEnabled = true;
+            // 刷新后重新判断是否有选中行
+            ApplyLimitsButton.IsEnabled = ProcessDataGrid.SelectedItem is ProcessInfo && !_isSettingPriority;
         }
     }
 
     private void ApplyView()
     {
         IEnumerable<ProcessInfo> query = _cachedProcesses;
-
-        if (OnlyWithWindowCheckBox.IsChecked == true)
-        {
-            query = query.Where(x => !string.IsNullOrWhiteSpace(x.MainWindowTitle));
-        }
 
         string keyword = SearchTextBox.Text.Trim();
         if (!string.IsNullOrWhiteSpace(keyword))
@@ -179,7 +216,7 @@ public partial class ProcessViewerToolView : UserControl
     {
         _isSettingPriority = true;
         RefreshButton.IsEnabled = false;
-        OnlyWithWindowCheckBox.IsEnabled = false;
+        ApplyLimitsButton.IsEnabled = false;
         SortFieldComboBox.IsEnabled = false;
         SortOrderComboBox.IsEnabled = false;
         SearchTextBox.IsEnabled = false;
@@ -220,11 +257,71 @@ public partial class ProcessViewerToolView : UserControl
         {
             _isSettingPriority = false;
             RefreshButton.IsEnabled = true;
-            OnlyWithWindowCheckBox.IsEnabled = true;
             SortFieldComboBox.IsEnabled = true;
             SortOrderComboBox.IsEnabled = true;
             SearchTextBox.IsEnabled = true;
             ProcessDataGrid.IsEnabled = true;
+            ApplyLimitsButton.IsEnabled = ProcessDataGrid.SelectedItem is ProcessInfo;
+        }
+    }
+
+    /// <summary>
+    /// 异步执行优先级 + CPU 亲和性组合限制，完成后弹出详细结果。
+    /// 后台线程执行系统调用，不阻塞 UI 线程。
+    /// </summary>
+    private async Task ApplyLimitsAsync(ProcessInfo selected)
+    {
+        _isSettingPriority = true;
+        RefreshButton.IsEnabled = false;
+        ApplyLimitsButton.IsEnabled = false;
+        SortFieldComboBox.IsEnabled = false;
+        SortOrderComboBox.IsEnabled = false;
+        SearchTextBox.IsEnabled = false;
+        ProcessDataGrid.IsEnabled = false;
+
+        try
+        {
+            // 两项系统调用均在后台线程执行，避免阻塞 UI。
+            ApplyLimitsResult result = await Task.Run(() => _processViewerTool.ApplyLimits(selected.ProcessId));
+
+            // 拼接结果文本，两项操作各自独立展示，方便定位哪一步失败。
+            string priorityLine = result.PriorityResult.Success
+                ? $"优先级：{result.PriorityResult.OldPriority} → {result.PriorityResult.NewPriority}  ✔"
+                : $"优先级：设置失败 — {result.PriorityResult.ErrorMessage}  ✘";
+
+            string affinityLine = result.AffinityResult.Success
+                ? $"CPU 相关性：{result.AffinityResult.OldAffinityText} → {result.AffinityResult.NewAffinityText}（共 {result.AffinityResult.CoreCount} 核）  ✔"
+                : $"CPU 相关性：设置失败 — {result.AffinityResult.ErrorMessage}  ✘";
+
+            MessageBoxImage icon = result.FullSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning;
+            string title = result.FullSuccess ? "限制成功" : "部分操作失败";
+
+            MessageBox.Show(
+                $"进程：{result.ProcessName}  PID：{result.ProcessId}\n\n{priorityLine}\n{affinityLine}",
+                title,
+                MessageBoxButton.OK,
+                icon);
+
+            // 操作完成后刷新列表，使优先级列显示最新值。
+            await LoadCacheAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"操作异常：{ex.Message}",
+                "限制失败",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        finally
+        {
+            _isSettingPriority = false;
+            RefreshButton.IsEnabled = true;
+            SortFieldComboBox.IsEnabled = true;
+            SortOrderComboBox.IsEnabled = true;
+            SearchTextBox.IsEnabled = true;
+            ProcessDataGrid.IsEnabled = true;
+            ApplyLimitsButton.IsEnabled = ProcessDataGrid.SelectedItem is ProcessInfo;
         }
     }
 }
