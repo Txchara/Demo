@@ -54,25 +54,7 @@
         </Border>
 
         <Grid Grid.Column="1" Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="16" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <StackPanel>
-                <TextBlock x:Name="ToolTitleTextBlock"
-                           FontSize="24"
-                           FontWeight="SemiBold"
-                           Text="Ping 工具" />
-                <TextBlock x:Name="ToolDescriptionTextBlock"
-                           Margin="0,6,0,0"
-                           Foreground="#6B7280"
-                           Text="输入地址并执行网络连通性检测。" />
-            </StackPanel>
-
-            <Border Grid.Row="2"
-                    Padding="18"
+            <Border Padding="18"
                     Background="White"
                     BorderBrush="#E5E7EB"
                     BorderThickness="1"

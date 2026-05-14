@@ -14,4 +14,8 @@
     <ProjectReference Include="..\Tool.Core\Tool.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="SettingViews\" />
+  </ItemGroup>
+
 </Project>

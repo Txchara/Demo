@@ -5,9 +5,11 @@ VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool.Console", "Tool.Console\Tool.Console.csproj", "{9FF08E1C-2ED4-45EF-B312-AB86338AE95C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Core", "Tool.Core\Tool.Core.csproj", "{D52AB2C6-0DC2-435F-93A9-4B809307DE2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool.Core", "Tool.Core\Tool.Core.csproj", "{D52AB2C6-0DC2-435F-93A9-4B809307DE2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.UI", "Tool.UI\Tool.UI.csproj", "{459F4B83-101F-4164-9AE5-5C1491A25C90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool.UI", "Tool.UI\Tool.UI.csproj", "{459F4B83-101F-4164-9AE5-5C1491A25C90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tool.Service", "Tool.Service\Tool.Service.csproj", "{979549BA-8ADE-4BE3-B870-39AE25C94761}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{459F4B83-101F-4164-9AE5-5C1491A25C90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{459F4B83-101F-4164-9AE5-5C1491A25C90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{459F4B83-101F-4164-9AE5-5C1491A25C90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{979549BA-8ADE-4BE3-B870-39AE25C94761}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{979549BA-8ADE-4BE3-B870-39AE25C94761}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{979549BA-8ADE-4BE3-B870-39AE25C94761}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{979549BA-8ADE-4BE3-B870-39AE25C94761}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
