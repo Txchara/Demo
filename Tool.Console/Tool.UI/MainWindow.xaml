@@ -6,7 +6,8 @@
         Height="560"
         MinWidth="760"
         MinHeight="480"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="convertico-Icon.ico">
     <Grid Background="#F6F7F9">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220" />
@@ -22,6 +23,23 @@
                     <RowDefinition Height="12" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+
+                <!-- App 名称，右键弹出菜单 -->
+                <TextBlock x:Name="AppTitleTextBlock"
+                           Grid.Row="0"
+                           Padding="10,8"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           Foreground="#111827"
+                           Text="工具箱"
+                           Cursor="Hand">
+                    <TextBlock.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="服务设置"
+                                      Click="SettingsMenuItem_Click" />
+                        </ContextMenu>
+                    </TextBlock.ContextMenu>
+                </TextBlock>
 
                 <ListBox x:Name="ToolListBox"
                          Grid.Row="2"

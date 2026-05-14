@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Tool.UI.SettingViews;
 using Tool.UI.Views;
 
 namespace Tool.UI;
@@ -13,6 +14,7 @@ public partial class MainWindow : Window
     private readonly LocalIpToolView _localIpToolView = new();
     private readonly ProcessViewerToolView _processViewerToolView = new();
     private readonly BatchFileCreateToolView _batchFileCreateToolView = new();
+    private readonly ServiceSettingsView _serviceSettingsView = new();
 
     public MainWindow()
     {
@@ -59,5 +61,12 @@ public partial class MainWindow : Window
                 ToolContentHost.Content = _batchFileCreateToolView;
                 break;
         }
+    }
+
+    private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        // 取消导航栏选中状态，避免和设置页产生视觉冲突。
+        ToolListBox.SelectedItem = null;
+        ToolContentHost.Content = _serviceSettingsView;
     }
 }

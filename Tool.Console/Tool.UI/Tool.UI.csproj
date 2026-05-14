@@ -8,7 +8,16 @@
     <Nullable>enable</Nullable>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <!-- exe 文件图标，发布后任务栏和文件资源管理器显示此图标 -->
+    <ApplicationIcon>convertico-Icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 发布时将图标复制到输出目录，路径与 rules.json 保持一致 -->
+    <Content Include="convertico-Icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Tool.Core\Tool.Core.csproj" />
