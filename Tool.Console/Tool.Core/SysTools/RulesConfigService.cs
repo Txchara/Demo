@@ -32,8 +32,8 @@ public sealed class RulesConfigService
     /// </summary>
     private static readonly List<StartItem> DefaultRules = new()
     {
-        new StartItem { Keyword = "SGuard", LimitPriority = true, LimitAffinity = true, Enabled = true },
-        new StartItem { Keyword = "ACE",    LimitPriority = true, LimitAffinity = true, Enabled = true },
+        new StartItem { Keyword = "SGuardSvc64", LimitPriority = true, LimitAffinity = true, Enabled = true },
+        new StartItem { Keyword = "SGuard64",    LimitPriority = true, LimitAffinity = true, Enabled = true },
     };
 
     /// <summary>

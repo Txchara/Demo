@@ -4,14 +4,46 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="10" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="14" />
             <RowDefinition Height="*" />
             <RowDefinition Height="14" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- 服务控制栏 -->
+        <Border Background="#F3F4F6" CornerRadius="4" Padding="12,8">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="服务状态：" VerticalAlignment="Center" FontSize="13" />
+                    <TextBlock x:Name="ServiceStatusText"
+                               VerticalAlignment="Center"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Text="检测中..." />
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="StartServiceButton"
+                            Width="80" Height="30" Margin="0,0,8,0"
+                            IsEnabled="False"
+                            Click="StartServiceButton_Click"
+                            Content="启动服务" />
+                    <Button x:Name="StopServiceButton"
+                            Width="80" Height="30" Margin="0,0,8,0"
+                            IsEnabled="False"
+                            Click="StopServiceButton_Click"
+                            Content="停止服务" />
+                    <Button x:Name="RefreshServiceButton"
+                            Width="60" Height="30"
+                            Click="RefreshServiceButton_Click"
+                            Content="刷新" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
         <!-- 顶部工具栏 -->
-        <DockPanel LastChildFill="False">
+        <DockPanel Grid.Row="2" LastChildFill="False">
             <Button x:Name="AddButton"
                       DockPanel.Dock="Left"
                       Width="80"
@@ -26,17 +58,11 @@
                       IsEnabled="False"
                       Click="DeleteButton_Click"
                       Content="删除规则" />
-            <TextBlock x:Name="ConfigPathTextBlock"
-                         DockPanel.Dock="Right"
-                         VerticalAlignment="Center"
-                         Foreground="#6B7280"
-                         FontSize="11"
-                         Text="" />
         </DockPanel>
 
         <!-- 规则列表 -->
         <DataGrid x:Name="RulesDataGrid"
-                    Grid.Row="2"
+                    Grid.Row="4"
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
                     CanUserDeleteRows="False"
@@ -93,7 +119,7 @@
         </DataGrid>
 
         <!-- 底部保存栏 -->
-        <DockPanel Grid.Row="4"
+        <DockPanel Grid.Row="6"
                      LastChildFill="False">
             <TextBlock x:Name="StatusTextBlock"
                          DockPanel.Dock="Left"
@@ -106,6 +132,13 @@
                       Height="32"
                       Click="SaveButton_Click"
                       Content="保存" />
+            <TextBlock x:Name="ConfigPathTextBlock"
+                         DockPanel.Dock="Right"
+                         VerticalAlignment="Center"
+                         Foreground="#6B7280"
+                         FontSize="11"
+                         Margin="0,0,12,0"
+                         Text="" />
         </DockPanel>
     </Grid>
 </UserControl>

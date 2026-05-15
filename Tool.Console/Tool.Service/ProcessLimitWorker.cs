@@ -10,20 +10,17 @@ namespace Tool.Service;
 /// </summary>
 public sealed class ProcessLimitWorker : BackgroundService
 {
-    /// <summary>
-    /// 扫描间隔，每 5 秒检查一次是否有新的目标进程出现。
-    /// </summary>
     private static readonly TimeSpan ScanInterval = TimeSpan.FromSeconds(5);
+
+    // 超过此间隔重新检查并补设限制，防止目标进程自行恢复优先级/亲和性。
+    private static readonly TimeSpan RecheckInterval = TimeSpan.FromMinutes(1);
 
     private readonly ProcessViewerTool _tool = new();
     private readonly RulesConfigService _config = new();
     private readonly ILogger<ProcessLimitWorker> _logger;
 
-    /// <summary>
-    /// 记录已处理过的 PID，避免对同一个进程重复设置。
-    /// 进程退出后其 PID 可能被系统复用，因此每轮扫描前会清理已退出的 PID。
-    /// </summary>
-    private readonly HashSet<int> _appliedPids = new();
+    /// 记录已处理过的 PID 及上次设置时间，超过 RecheckInterval 后重新补设。
+    private readonly Dictionary<int, DateTime> _appliedPids = new();
 
     public ProcessLimitWorker(ILogger<ProcessLimitWorker> logger)
     {
@@ -74,16 +71,16 @@ public sealed class ProcessLimitWorker : BackgroundService
 
             foreach (ProcessInfo process in matched)
             {
-                // 已处理过的 PID 跳过，避免每轮都重复设置。
-                if (!_appliedPids.Add(process.ProcessId))
-                {
+                bool seen = _appliedPids.TryGetValue(process.ProcessId, out DateTime lastApplied);
+                if (seen && DateTime.UtcNow - lastApplied < RecheckInterval)
                     continue;
-                }
 
-                _logger.LogInformation(
-                    "发现目标进程：{Name}（PID: {Pid}），规则关键字：{Keyword}",
-                    process.ProcessName, process.ProcessId, rule.Keyword);
+                if (!seen)
+                    _logger.LogInformation(
+                        "发现目标进程：{Name}（PID: {Pid}），规则关键字：{Keyword}",
+                        process.ProcessName, process.ProcessId, rule.Keyword);
 
+                _appliedPids[process.ProcessId] = DateTime.UtcNow;
                 ApplyRule(rule, process.ProcessId);
             }
         }
@@ -124,7 +121,7 @@ public sealed class ProcessLimitWorker : BackgroundService
     {
         var exited = new List<int>();
 
-        foreach (int pid in _appliedPids)
+        foreach (int pid in _appliedPids.Keys)
         {
             try
             {

@@ -1,26 +1,106 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.ServiceProcess;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Tool.Core.SysTools;
 
 namespace Tool.UI.SettingViews;
 
 public partial class ServiceSettingsView : UserControl
 {
+    private const string ServiceName = "ProcessLimitService";
+
     private readonly RulesConfigService _configService = new();
 
-    /// <summary>
-    /// DataGrid 绑定的可观察集合，每行对应一条规则。
-    /// </summary>
     private ObservableCollection<StartItemViewModel> _rules = new();
 
     public ServiceSettingsView()
     {
         InitializeComponent();
-        ConfigPathTextBlock.Text = $"配置文件：{RulesConfigService.GetConfigFilePath()}";
+        ConfigPathTextBlock.Text = $"c：{RulesConfigService.GetConfigFilePath()}";
         LoadRules();
+        RefreshServiceStatus();
+    }
+
+    private void RefreshServiceStatus()
+    {
+        try
+        {
+            using var sc = new ServiceController(ServiceName);
+            ServiceControllerStatus status = sc.Status;
+
+            bool running = status == ServiceControllerStatus.Running;
+            bool stopped = status == ServiceControllerStatus.Stopped;
+
+            ServiceStatusText.Text = status switch
+            {
+                ServiceControllerStatus.Running => "运行中",
+                ServiceControllerStatus.Stopped => "已停止",
+                ServiceControllerStatus.StartPending => "正在启动...",
+                ServiceControllerStatus.StopPending => "正在停止...",
+                _ => status.ToString()
+            };
+            ServiceStatusText.Foreground = running
+                ? new SolidColorBrush(Color.FromRgb(22, 163, 74))
+                : new SolidColorBrush(Color.FromRgb(107, 114, 128));
+
+            StartServiceButton.IsEnabled = stopped;
+            StopServiceButton.IsEnabled = running;
+        }
+        catch (InvalidOperationException)
+        {
+            // 服务未安装
+            ServiceStatusText.Text = "未安装";
+            ServiceStatusText.Foreground = new SolidColorBrush(Color.FromRgb(220, 38, 38));
+            StartServiceButton.IsEnabled = false;
+            StopServiceButton.IsEnabled = false;
+        }
+    }
+
+    private void StartServiceButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var sc = new ServiceController(ServiceName);
+            sc.Start();
+            sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"启动服务失败：{ex.Message}\n\n请确认以管理员身份运行。",
+                "启动失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            RefreshServiceStatus();
+        }
+    }
+
+    private void StopServiceButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var sc = new ServiceController(ServiceName);
+            sc.Stop();
+            sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"停止服务失败：{ex.Message}",
+                "停止失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            RefreshServiceStatus();
+        }
+    }
+
+    private void RefreshServiceButton_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshServiceStatus();
     }
 
     private void LoadRules()
