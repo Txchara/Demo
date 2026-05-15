@@ -67,6 +67,9 @@
                     <ListBoxItem Tag="BatchFileCreate" Padding="10,8">
                         <TextBlock FontSize="14" Text="批量创建文件" />
                     </ListBoxItem>
+                    <ListBoxItem Tag="StartupItem" Padding="10,8">
+                        <TextBlock FontSize="14" Text="启动项管理" />
+                    </ListBoxItem>
                 </ListBox>
             </Grid>
         </Border>
