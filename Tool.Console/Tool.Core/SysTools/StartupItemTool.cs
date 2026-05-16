@@ -159,6 +159,39 @@ namespace Tool.Core.SysTools
             return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
         }
 
+        /// <summary>
+        /// 启用或禁用一条注册表启动项。
+        /// 原理：写 StartupApproved 对应键的二进制值，第 1 字节 0x02=启用，0x03=禁用。
+        /// </summary>
+        /// <param name="item">要操作的启动项，Source 必须是 HKCU / HKLM / HKLM(x86)</param>
+        /// <param name="enable">true=启用，false=禁用</param>
+        /// <exception cref="InvalidOperationException">文件夹来源不支持此操作</exception>
+        /// <exception cref="UnauthorizedAccessException">HKLM 来源需要管理员权限</exception>
+        public void SetEnabled(StartUpItemInfo item, bool enable)
+        {
+            (RegistryKey hive, string approvedPath) = item.Source switch
+            {
+                "HKCU" => (Registry.CurrentUser,
+                                @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"),
+                "HKLM" => (Registry.LocalMachine,
+                                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"),
+                "HKLM(x86)" => (Registry.LocalMachine,
+                                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"),
+                _ => throw new InvalidOperationException($"来源 '{item.Source}' 不支持启用/禁用操作")
+            };
+
+            using RegistryKey approved = hive.CreateSubKey(approvedPath, writable: true)
+                ?? throw new InvalidOperationException("无法打开 StartupApproved 注册表键");
+
+            // 保留原有 12 字节结构（任务管理器写入格式），仅修改第 1 字节状态标志
+            byte[] data = approved.GetValue(item.Name) as byte[] ?? new byte[12];
+            if (data.Length < 12) Array.Resize(ref data, 12);
+
+            data[0] = enable ? (byte)0x02 : (byte)0x03;
+
+            approved.SetValue(item.Name, data, RegistryValueKind.Binary);
+        }
+
         #endregion
 
         #region 数据模型

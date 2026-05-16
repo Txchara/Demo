@@ -24,6 +24,15 @@
                                Text="检测中..." />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="InstallServiceButton"
+                            Width="80" Height="30" Margin="0,0,8,0"
+                            Click="InstallServiceButton_Click"
+                            Content="安装服务" />
+                    <Button x:Name="UninstallServiceButton"
+                            Width="80" Height="30" Margin="0,0,8,0"
+                            IsEnabled="False"
+                            Click="UninstallServiceButton_Click"
+                            Content="卸载服务" />
                     <Button x:Name="StartServiceButton"
                             Width="80" Height="30" Margin="0,0,8,0"
                             IsEnabled="False"

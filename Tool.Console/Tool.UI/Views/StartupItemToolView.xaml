@@ -48,7 +48,8 @@
                     GridLinesVisibility="Horizontal"
                     HeadersVisibility="Column"
                     AlternatingRowBackground="#FAFAFA"
-                    RowHeaderWidth="0">
+                    RowHeaderWidth="0"
+                    MouseDoubleClick="StartupDataGrid_MouseDoubleClick">
             <DataGrid.Columns>
                 <DataGridTextColumn Width="180"
                                       Header="名称"

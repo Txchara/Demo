@@ -37,27 +37,124 @@ public partial class ServiceSettingsView : UserControl
 
             ServiceStatusText.Text = status switch
             {
-                ServiceControllerStatus.Running => "运行中",
-                ServiceControllerStatus.Stopped => "已停止",
+                ServiceControllerStatus.Running      => "运行中",
+                ServiceControllerStatus.Stopped      => "已停止",
                 ServiceControllerStatus.StartPending => "正在启动...",
-                ServiceControllerStatus.StopPending => "正在停止...",
-                _ => status.ToString()
+                ServiceControllerStatus.StopPending  => "正在停止...",
+                _                                    => status.ToString()
             };
             ServiceStatusText.Foreground = running
                 ? new SolidColorBrush(Color.FromRgb(22, 163, 74))
                 : new SolidColorBrush(Color.FromRgb(107, 114, 128));
 
-            StartServiceButton.IsEnabled = stopped;
-            StopServiceButton.IsEnabled = running;
+            InstallServiceButton.IsEnabled   = false;
+            UninstallServiceButton.IsEnabled = stopped;
+            StartServiceButton.IsEnabled     = stopped;
+            StopServiceButton.IsEnabled      = running;
         }
         catch (InvalidOperationException)
         {
-            // 服务未安装
             ServiceStatusText.Text = "未安装";
             ServiceStatusText.Foreground = new SolidColorBrush(Color.FromRgb(220, 38, 38));
-            StartServiceButton.IsEnabled = false;
-            StopServiceButton.IsEnabled = false;
+
+            InstallServiceButton.IsEnabled   = true;
+            UninstallServiceButton.IsEnabled = false;
+            StartServiceButton.IsEnabled     = false;
+            StopServiceButton.IsEnabled      = false;
         }
+    }
+
+    private async void InstallServiceButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Tool.Service.exe 与 Tool.UI.exe 发布在同一目录
+        string exePath = System.IO.Path.Combine(
+            AppContext.BaseDirectory, "Tool.Service.exe");
+
+        if (!System.IO.File.Exists(exePath))
+        {
+            MessageBox.Show(
+                $"未找到服务程序：\n{exePath}\n\n请确认 Tool.Service.exe 与本程序在同一目录。",
+                "安装失败", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        SetServiceButtons(false);
+        StatusTextBlock.Text = "正在安装服务...";
+
+        (bool ok, string msg) = await Task.Run(() => RunSc(
+            $"create {ServiceName} binPath= \"{exePath}\" start= auto DisplayName= \"进程限制服务\""));
+
+        if (ok)
+        {
+            StatusTextBlock.Text = "服务安装成功。";
+            MessageBox.Show("服务安装成功。", "安装成功", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        else
+        {
+            StatusTextBlock.Text = "安装失败。";
+            MessageBox.Show($"安装失败：\n{msg}\n\n请以管理员身份运行本程序。",
+                "安装失败", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        RefreshServiceStatus();
+    }
+
+    private async void UninstallServiceButton_Click(object sender, RoutedEventArgs e)
+    {
+        var confirm = MessageBox.Show(
+            "确认卸载服务？卸载后进程限制功能将停止工作。",
+            "确认卸载", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.OK) return;
+
+        SetServiceButtons(false);
+        StatusTextBlock.Text = "正在卸载服务...";
+
+        (bool ok, string msg) = await Task.Run(() => RunSc($"delete {ServiceName}"));
+
+        if (ok)
+        {
+            StatusTextBlock.Text = "服务已卸载。";
+            MessageBox.Show("服务已卸载。", "卸载成功", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        else
+        {
+            StatusTextBlock.Text = "卸载失败。";
+            MessageBox.Show($"卸载失败：\n{msg}\n\n请以管理员身份运行本程序。",
+                "卸载失败", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        RefreshServiceStatus();
+    }
+
+    /// <summary>
+    /// 执行 sc.exe 命令，返回 (成功, 输出信息)。
+    /// sc.exe 成功时退出码为 0，失败时输出错误描述。
+    /// </summary>
+    private static (bool ok, string output) RunSc(string arguments)
+    {
+        using var p = new System.Diagnostics.Process();
+        p.StartInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName               = "sc.exe",
+            Arguments              = arguments,
+            UseShellExecute        = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError  = true,
+            CreateNoWindow         = true
+        };
+        p.Start();
+        string output = p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd();
+        p.WaitForExit();
+        return (p.ExitCode == 0, output.Trim());
+    }
+
+    private void SetServiceButtons(bool enabled)
+    {
+        InstallServiceButton.IsEnabled   = enabled;
+        UninstallServiceButton.IsEnabled = enabled;
+        StartServiceButton.IsEnabled     = enabled;
+        StopServiceButton.IsEnabled      = enabled;
+        RefreshServiceButton.IsEnabled   = enabled;
     }
 
     private void StartServiceButton_Click(object sender, RoutedEventArgs e)
