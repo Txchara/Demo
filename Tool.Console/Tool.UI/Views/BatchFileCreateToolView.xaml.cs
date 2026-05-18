@@ -15,10 +15,17 @@ public partial class BatchFileCreateToolView : UserControl
     public BatchFileCreateToolView()
     {
         InitializeComponent();
-        ExtensionTextBox.Text = ".txt";
+        ExtensionComboBox.SelectedIndex = 0;
         CountTextBox.Text = "0";
         UpdateImportedNames(Array.Empty<string>());
         UpdateCreateSummary(null);
+    }
+
+    private string GetSelectedExtension()
+    {
+        if (ExtensionComboBox.SelectedItem is ComboBoxItem item)
+            return item.Tag?.ToString() ?? string.Empty;
+        return ExtensionComboBox.Text.Trim();
     }
 
     private void GenerateTemplateButton_Click(object sender, RoutedEventArgs e)
@@ -149,10 +156,10 @@ public partial class BatchFileCreateToolView : UserControl
             return;
         }
 
-        string extension = ExtensionTextBox.Text.Trim();
+        string extension = GetSelectedExtension();
         if (string.IsNullOrWhiteSpace(extension))
         {
-            CreateSummaryTextBlock.Text = "请先填写文件类型，例如 .txt。";
+            CreateSummaryTextBlock.Text = "请先选择或填写文件类型，例如 .txt。";
             return;
         }
 
