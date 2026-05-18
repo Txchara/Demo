@@ -70,6 +70,9 @@
                     <ListBoxItem Tag="StartupItem" Padding="10,8">
                         <TextBlock FontSize="14" Text="启动项管理" />
                     </ListBoxItem>
+                    <ListBoxItem Tag="FileInfo" Padding="10,8">
+                        <TextBlock FontSize="14" Text="文件信息" />
+                    </ListBoxItem>
                 </ListBox>
             </Grid>
         </Border>
