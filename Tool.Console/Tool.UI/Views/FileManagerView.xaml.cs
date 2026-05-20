@@ -91,7 +91,7 @@ public partial class FileManagerView : UserControl
 
     // ── 选择文件夹按钮 ────────────────────────────────────────────
 
-    private void BrowseButton_Click(object sender, RoutedEventArgs e)
+    private async void BrowseButton_Click(object sender, RoutedEventArgs e)
     {
         // WPF .NET 6 无内置文件夹选择器，借用 OpenFileDialog 导航到目标目录后取其父路径
         var dialog = new Microsoft.Win32.OpenFileDialog
