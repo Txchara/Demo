@@ -2,11 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title=""
-        Width="900"
-        Height="560"
-        MinWidth="760"
-        MinHeight="480"
-        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        MinWidth="900"
+        MinHeight="600"
         Icon="convertico-Icon.ico">
     <Grid Background="#F6F7F9">
         <Grid.ColumnDefinitions>
@@ -71,7 +69,7 @@
                         <TextBlock FontSize="14" Text="启动项管理" />
                     </ListBoxItem>
                     <ListBoxItem Tag="FileInfo" Padding="10,8">
-                        <TextBlock FontSize="14" Text="文件信息" />
+                        <TextBlock FontSize="14" Text="文件管理" />
                     </ListBoxItem>
                 </ListBox>
             </Grid>

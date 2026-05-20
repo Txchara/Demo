@@ -1,0 +1,179 @@
+<UserControl x:Class="Tool.UI.Views.FileManagerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="8" />
+            <RowDefinition Height="200" />
+        </Grid.RowDefinitions>
+
+        <!-- 顶部路径栏 -->
+        <Border Padding="10,8"
+                Background="#FBFBFC"
+                BorderBrush="#E5E7EB"
+                BorderThickness="1"
+                CornerRadius="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="80" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="PathTextBox"
+                         Height="30"
+                         VerticalContentAlignment="Center"
+                         KeyDown="PathTextBox_KeyDown" />
+                <Button x:Name="BrowseButton"
+                        Grid.Column="2"
+                        Height="30"
+                        Content="选择文件夹"
+                        Click="BrowseButton_Click" />
+                <Button x:Name="GoUpButton"
+                        Grid.Column="4"
+                        Height="30"
+                        Content="上一级"
+                        Click="GoUpButton_Click" />
+            </Grid>
+        </Border>
+
+        <!-- 中部：左侧目录树 + 右侧文件列表 -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" MinWidth="120" MaxWidth="400" />
+                <ColumnDefinition Width="6" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧目录树 -->
+            <Border BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="6">
+                <TreeView x:Name="DirectoryTreeView"
+                          BorderThickness="0"
+                          SelectedItemChanged="DirectoryTreeView_SelectedItemChanged">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="False" />
+                            <EventSetter Event="Expanded" Handler="TreeViewItem_Expanded" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.ItemTemplate>
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Name}" />
+                        </HierarchicalDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </Border>
+
+            <!-- 分隔条 -->
+            <GridSplitter Grid.Column="1"
+                          Width="6"
+                          HorizontalAlignment="Stretch"
+                          Background="#E5E7EB" />
+
+            <!-- 右侧文件列表 -->
+            <Border Grid.Column="2" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="6">
+                <DataGrid x:Name="FileListDataGrid"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          BorderThickness="0"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          SelectionMode="Single"
+                          EnableRowVirtualization="True"
+                          SelectionChanged="FileListDataGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="名称" Binding="{Binding Name}" Width="*" MinWidth="120" />
+                        <DataGridTextColumn Header="类型" Binding="{Binding TypeLabel}" Width="60" />
+                        <DataGridTextColumn Header="大小" Binding="{Binding SizeText}" Width="90" />
+                        <DataGridTextColumn Header="修改时间" Binding="{Binding ModifiedAt, StringFormat=\{0:yyyy-MM-dd HH:mm\}}" Width="130" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+        <!-- 底部详情 + 哈希区 -->
+        <Border Grid.Row="4"
+                Padding="12"
+                Background="#FBFBFC"
+                BorderBrush="#E5E7EB"
+                BorderThickness="1"
+                CornerRadius="8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="260" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 文件详情 -->
+                <TextBox x:Name="DetailTextBox"
+                         IsReadOnly="True"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         VerticalScrollBarVisibility="Auto"
+                         TextWrapping="NoWrap" />
+
+                <!-- 哈希计算区 -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="哈希计算" FontWeight="SemiBold" Foreground="#374151" />
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal">
+                        <RadioButton x:Name="Md5Radio" Content="MD5" IsChecked="True" Margin="0,0,12,0" />
+                        <RadioButton x:Name="Sha256Radio" Content="SHA256" />
+                    </StackPanel>
+
+                    <ProgressBar x:Name="HashProgressBar"
+                                 Grid.Row="4"
+                                 Height="6"
+                                 Minimum="0"
+                                 Maximum="100"
+                                 Value="0" />
+
+                    <TextBox x:Name="HashResultTextBox"
+                             Grid.Row="6"
+                             IsReadOnly="True"
+                             FontFamily="Consolas"
+                             FontSize="11"
+                             TextWrapping="Wrap"
+                             Height="60"
+                             VerticalScrollBarVisibility="Auto"
+                             Background="#F3F4F6"
+                             BorderBrush="#E5E7EB" />
+
+                    <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="CancelHashButton"
+                                Content="取消"
+                                Width="60"
+                                Height="28"
+                                Margin="0,0,8,0"
+                                IsEnabled="False"
+                                Click="CancelHashButton_Click" />
+                        <Button x:Name="ComputeHashButton"
+                                Content="计算哈希"
+                                Width="80"
+                                Height="28"
+                                Click="ComputeHashButton_Click" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

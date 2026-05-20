@@ -15,7 +15,7 @@ public partial class MainWindow : Window
     private readonly ProcessViewerToolView _processViewerToolView = new();
     private readonly BatchFileCreateToolView _batchFileCreateToolView = new();
     private readonly StartupItemToolView _startupItemToolView = new();
-    private readonly FileInfoToolView _fileInfoToolView = new();
+    private readonly FileManagerView _fileManagerView = new();
     private readonly ServiceSettingsView _serviceSettingsView = new();
 
     public MainWindow()
@@ -68,7 +68,7 @@ public partial class MainWindow : Window
                 break;
 
             case "FileInfo":
-                ToolContentHost.Content = _fileInfoToolView;
+                ToolContentHost.Content = _fileManagerView;
                 break;
         }
     }
